@@ -6,25 +6,16 @@ import java.io.*;
 public class AirlineFlights {
 	static Statement stmt;
 	static Connection m_con;
-	private String flightSel;
+	static String m_url = "jdbc:oracle:thin:@gwynne.cs.ualberta.ca:1521:CRS";
 
 	static User user;
-	static String u_email;
-	static String u_name;
-	static String u_country;
+	static List<Integer> tix = new ArrayList<Integer>();
+	public static void makeConnection(String o_uname, String o_pw) throws SQLException {
+		m_con = DriverManager.getConnection(m_url, o_uname, o_pw);
+		
+	}
 	
-	static String u_src = ""; //TODO
-	static String u_dst = ""; //TODO
-	static Date u_depDate = null; //TODO
-	static String u_sortBy = ""; //TODO
-	static String u_sortOrder = ""; //TODO
-	
-	String u_seat; //TODO
-	int u_tno;	//TODO: Generate random ticket number not in db
-	String u_fare; //TODO
-	float u_price;	//TODO
-	
-	public static ResultSet searchFlights() throws SQLException{
+	public static ResultSet searchFlights(String u_src, String u_dst, String u_depDate, String u_sortBy, String u_sortOrder) throws SQLException{
 
 
 		String availFlights = 
@@ -75,19 +66,25 @@ public class AirlineFlights {
 		// print out the thing
 		return rs;
 	}
-	public void makeBooking(String f) throws SQLException {
-		flightSel = f;
-		
-		updatePassengers();
-		updateBookingsTickets();
+
+	public static boolean checkPassengers(String u_name) throws SQLException {
+		String psgTable = 
+				"select name, email, country "+
+						"from passengers "+
+						"where name="+u_name;
+		ResultSet p_rs = stmt.executeQuery(psgTable);
+
+		// Look for passenger's name in passengers table
+		return p_rs.next();
 
 	}
-	private void updatePassengers() throws SQLException{
+	public void updatePassengers(String u_name, String u_country) throws SQLException{
 		// check name in passenger table
 
 		String psgTable = 
 				"select name, email, country "+
-						"from passengers ";
+						"from passengers "+
+						"where name=";
 		ResultSet p_rs = stmt.executeQuery(psgTable);
 
 		// Look for passenger's name in passengers table. Add if not exist
@@ -107,8 +104,25 @@ public class AirlineFlights {
 			p_rs.updateRow();
 		}
 	}
-	private void updateBookingsTickets() throws SQLException {
-
+	private static int generateTix() throws SQLException {
+		Random rn = new Random();
+		int n = rn.nextInt();
+		String ticketNums = 
+				"select tno "+
+						"from tickets";
+		ResultSet rs = stmt.executeQuery(ticketNums);
+		while (rs.next()) {
+			tix.add(rs.getInt("tno"));
+		}
+		while (tix.contains(n)) {
+			n = rn.nextInt();
+		}
+		return n;
+	}
+	
+	private static void updateBookingsTickets(String u_name, String email, String flightno, Float u_price, 
+			String u_fare, Date u_depDate, String u_seat) throws SQLException {
+		int tno = generateTix();
 		String bTable = 
 				"select tno, flightno, fare, dep_date, seat "+ 
 						"from bookings";
@@ -120,13 +134,13 @@ public class AirlineFlights {
 		ResultSet tickets_rs = stmt.executeQuery(tTable);
 		m_con.setAutoCommit(false);	// start transaction block
 		tickets_rs.moveToInsertRow();
-		tickets_rs.updateInt("tno", u_tno);
+		tickets_rs.updateInt("tno", tno);
 		tickets_rs.updateString("name", u_name);
 		tickets_rs.updateString("email", user.getEmail());
 		tickets_rs.updateFloat("paid_price", u_price);
 		tickets_rs.insertRow();
-		bookings_rs.updateInt("tno", u_tno);
-		bookings_rs.updateString("flightno", flightSel);
+		bookings_rs.updateInt("tno", tno);
+		bookings_rs.updateString("flightno", flightno);
 		bookings_rs.updateString("fare", u_fare);
 		bookings_rs.updateDate("dep_date", u_depDate);
 		bookings_rs.updateString("seat", u_seat);
@@ -154,7 +168,7 @@ public class AirlineFlights {
 			System.err.println(e.getMessage());
 		}
 
-		String m_url = "jdbc:oracle:thin:@gwynne.cs.ualberta.ca:1521:CRS";
+		
 
 		// get oracle username
 		System.out.print("Username: ");
@@ -166,18 +180,16 @@ public class AirlineFlights {
 		String m_password = new String(passwordArray);
 
 		try {
-			// Establish connection
-			m_con = DriverManager.getConnection(m_url, m_userName, m_password);
 			stmt = m_con.createStatement(
 					ResultSet.TYPE_SCROLL_SENSITIVE,
 					ResultSet.CONCUR_UPDATABLE);
 
 			/****** query stuff goes here *******/
 			String email;
-			user = new User(stmt, m_con, u_email); //TODO: login and get user info
+			user = new User(user.getEmail()); //TODO: login and get user info
 
-			
-			
+
+
 			/******************/
 			stmt.close();
 			m_con.close();

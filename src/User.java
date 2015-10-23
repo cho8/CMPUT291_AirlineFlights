@@ -8,9 +8,7 @@ public class User{
 
 	private String u_email; //TODO
 
-	public User(Statement s, Connection c, String email) {
-		stmt = s;
-		m_con = c;
+	public User(String email) {
 		u_email = email;
 	}
 	public boolean isUser() throws SQLException {
@@ -25,11 +23,15 @@ public class User{
 			return false;
 		}
 	}
-	public boolean checkPassword(String pw) throws SQLException {
+	public void getConnection(Statement s, Connection c) {
+		stmt = s;
+		m_con = c;
+	}
+	public boolean checkPassword(String m_email, String pw) throws SQLException {
 		String userT = 
 				"select email, password "+
 						"from users "+
-						"where email="+u_email+
+						"where email="+m_email+
 						" and password="+pw;
 		ResultSet rs = stmt.executeQuery(userT);
 		return rs.next();
