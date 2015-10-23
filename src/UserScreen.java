@@ -3,6 +3,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 
 public class UserScreen{
@@ -37,6 +39,7 @@ public class UserScreen{
 	private JButton deletebooking;
 	private JLabel passengerlab;
 	private JLabel countrylab;
+	private ResultSet results;
 	
 	public UserScreen(){
 		src = new JTextField(TEXT_FIELD_SIZE);
@@ -120,11 +123,13 @@ public class UserScreen{
 		searchf.addActionListener(new ActionListener(){
 			 public void actionPerformed(ActionEvent e){
 				deletebooking.setVisible(false);
-				 getQuery();
+				 getFlights();
+				 displayFlights();
 			 }
 		});
 		logout.addActionListener(new ActionListener(){
 			 public void actionPerformed(ActionEvent e){
+				 Main.currentuser.logout();
 				 clear();
 				 lscreen = new UserLoginScreen();
 				 lscreen.init();
@@ -165,11 +170,48 @@ public class UserScreen{
 		});
 	}
 	
-	private void getQuery(){
-		String date = "Source: "+ src.getText() + " Destination: " + dest.getText() 
-				+ " Date: " + monthbox.getSelectedItem() + "/" 
-				+ datebox.getSelectedItem() + "/" + yearbox.getSelectedItem();
-				model.addElement(date);
+	private void getFlights(){
+		String date = yearbox.getSelectedItem()+"-"+(monthbox.getSelectedIndex()+1)+"-"+datebox.getSelectedIndex();
+		System.out.println(date);
+		//results = searchFlights(src.getText(),dest.getText(),date);
+		
+	}
+	
+	private boolean multipleConnections(){
+		return false;
+	}
+	private void displayFlights(){
+		
+		try{
+		String flight1 = results.getString("flightno1");
+		String flight2 = results.getString("flightno2");
+		String flight3;
+		if(multipleConnections()){
+			flight3 = results.getString("flightno3");
+		}else{
+			flight3 = "";
+		}
+		
+		while(results.next()){
+			Integer stops = results.getInt("stops");
+			String layover;
+			if(stops == 0){
+				layover = "";
+			}else{
+				layover = String.valueOf(results.getFloat("layover"));
+			}
+			String resultitem = results.getString("src")+","
+					+results.getString("dest")+","
+					+flight1 + flight2 + flight3
+					+stops+layover+results.getFloat("price")
+					+results.getDate("dep_time").toString()
+					+results.getDate("arr_time").toString()
+					+results.getInt("seats");
+			model.addElement(resultitem);
+		}
+		} catch(SQLException e){
+			System.out.println("Can't get Flights");
+		}
 	}
 	
 
