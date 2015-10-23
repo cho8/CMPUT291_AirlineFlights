@@ -213,7 +213,4 @@ public class AirlineSystem {
 		stmt.executeUpdate(bookingsQ);
 	}
 	
-	public static void logout() throws SQLException {
-		user.setLastLogin();
-	}
 }
