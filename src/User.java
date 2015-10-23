@@ -11,7 +11,9 @@ public class User{
 	public User(String email) {
 		u_email = email;
 	}
-	public static boolean isUser(String m_email) throws SQLException {
+
+	public boolean isUser(String m_email) throws SQLException {
+
 		String userT = 
 				"select email "+
 						"from users "+
