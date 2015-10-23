@@ -15,17 +15,10 @@ public class SQLLoginScreen extends LoginScreen{
 		panel.add(login);
 		super.login.addActionListener(new ActionListener(){
 			 public void actionPerformed(ActionEvent e){
-				 try{
-					 AirlineFlights flights = new AirlineFlights();
+					 AirlineSystem flights = new AirlineSystem();
 					 flights.makeConnection(user.getText(),
 						 String.valueOf(pwrd.getPassword()));
-				 	} catch(SQLException err) {
-					 System.out.println("fail");
-				 	} catch(Exception e) {
-						System.err.print("ClassNotFoundException: ");
-						System.err.println(e.getMessage());
-					}
-				 	}
+
 				 clear();
 				 userlogin = new UserLoginScreen();
 				 userlogin.init();
