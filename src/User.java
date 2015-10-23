@@ -47,7 +47,11 @@ public class User{
 	public void createNewUser(String pass) throws SQLException{
 		//check password
 		String newuser =
+<<<<<<< Updated upstream
 				"insert into users values ('" + u_email + "','" + pass + "',null)";
+=======
+				"insert into users values (" + u_email + "," + pass + ",null)";
+>>>>>>> Stashed changes
 		stmt.executeUpdate(newuser);
 	}
 	
