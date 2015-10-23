@@ -3,7 +3,7 @@ import java.sql.*;
 import java.sql.Date;
 import java.io.*;
 
-public class AirlineFlights {
+public class AirlineSystem {
 	static Statement stmt;
 	static Connection m_con;
 	static String m_url = "jdbc:oracle:thin:@gwynne.cs.ualberta.ca:1521:CRS";
