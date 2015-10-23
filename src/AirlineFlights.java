@@ -10,7 +10,7 @@ public class AirlineFlights {
 
 	static User user;
 	static List<Integer> tix = new ArrayList<Integer>();
-	public static void makeConnection(String o_uname, String o_pw) throws SQLException {
+	public void makeConnection(String o_uname, String o_pw) throws SQLException {
 		m_con = DriverManager.getConnection(m_url, o_uname, o_pw);
 		
 	}
@@ -169,15 +169,6 @@ public class AirlineFlights {
 		}
 
 		
-
-		// get oracle username
-		System.out.print("Username: ");
-		Console co = System.console();
-		String m_userName = co.readLine();
-
-		// obtain password
-		char[] passwordArray = co.readPassword("Password: ");
-		String m_password = new String(passwordArray);
 
 		try {
 			stmt = m_con.createStatement(
