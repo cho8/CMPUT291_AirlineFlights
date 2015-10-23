@@ -22,7 +22,7 @@ public class User{
 						"from users "+
 						"where email='"+m_email+"'";
 		ResultSet rs = stmt.executeQuery(userQ);
-		
+
 
 		if(rs.next()) {
 			String agentQ = 
@@ -62,5 +62,14 @@ public class User{
 		stmt.executeUpdate(newuser);
 	}
 
+	public void setLastLogin() throws SQLException{
+		String lastLoginQ =
+				"UPDATE table_name "+
+						"SET last_login= to_date(sysdate, 'dd-mon-yyyy') "+
+						"WHERE email= '"+u_email+"'";
+		stmt.executeUpdate(lastLoginQ);
+		
+
+	}
 
 }

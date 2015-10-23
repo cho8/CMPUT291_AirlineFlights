@@ -49,8 +49,8 @@ public class AirlineSystem {
 		m_con.close();
 	}
 
-	public static ResultSet searchFlights(String u_src, String u_dst, String u_depDate, String u_sortBy, String u_sortOrder) throws SQLException{
-
+	public static ResultSet searchFlights(String u_src, String u_dst, String u_depDate) throws SQLException{
+		//TODO:
 
 		
 		return null;
@@ -133,7 +133,7 @@ public class AirlineSystem {
 
 
 	public static String makeBookings(String u_name, String email, String flightno, Float u_price, 
-			String u_fare, Date u_depDate) throws SQLException {
+			String u_fare, String u_depDate) throws SQLException {
 
 		String bookingsQ = 
 				"select tno, flightno, fare, dep_date, seat "+ 
@@ -199,17 +199,21 @@ public class AirlineSystem {
 		return rs;
 	}
 
-	public static void cancelBooking(int u_tno, String u_flightno, Date u_dep_date, String u_seat) throws SQLException {
+	public static void cancelBooking(int u_tno, String u_flightno, String u_dep_date, String u_seat) throws SQLException {
 		String bookingsQ = 
 				"delete from bookings "+
 						"where flightno= '"+u_flightno+"'"+
 						" and dep_date="+u_dep_date+
-						" and seat= '"+u_seat+"'"
-						" and tno="+tno;
+						" and seat= '"+u_seat+"'"+
+						" and tno="+u_tno;
 		String ticketsQ = 
 				"delete from tickets "+
-		"where tno"
+						"where tno="+u_tno+
+						" and email='"+user.getEmail();
 		stmt.executeUpdate(bookingsQ);
-		
+	}
+	
+	public static void logout() throws SQLException {
+		user.setLastLogin();
 	}
 }
