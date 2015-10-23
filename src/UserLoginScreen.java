@@ -1,6 +1,8 @@
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.sql.SQLException;
 
 import javax.swing.*;
@@ -21,6 +23,15 @@ private JLabel message = new JLabel("");
 		panel.add(message);
 		message.setFont(new Font("Sans Serif", Font.BOLD, 14));
 		message.setForeground(Color.RED);
+		
+		pwrd.addKeyListener(new KeyAdapter(){
+			public void keyPressed(KeyEvent e){
+				System.out.println("Some key pressed");
+				if(e.getKeyCode() == KeyEvent.VK_ENTER){
+					login.doClick();
+				}
+			}
+		});
 		
 		super.login.addActionListener(new ActionListener(){
 			 public void actionPerformed(ActionEvent e){

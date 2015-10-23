@@ -1,6 +1,4 @@
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.sql.SQLException;
+import java.awt.event.*;
 
 public class SQLLoginScreen extends LoginScreen{
 	
@@ -13,6 +11,15 @@ public class SQLLoginScreen extends LoginScreen{
 		panel.add(plabel);
 		panel.add(pwrd);
 		panel.add(login);
+		pwrd.addKeyListener(new KeyAdapter(){
+			public void keyPressed(KeyEvent e){
+				System.out.println("Some key pressed");
+				if(e.getKeyCode() == KeyEvent.VK_ENTER){
+					login.doClick();
+				}
+			}
+		});
+		
 		super.login.addActionListener(new ActionListener(){
 			 public void actionPerformed(ActionEvent e){
 					 AirlineSystem flights = new AirlineSystem();

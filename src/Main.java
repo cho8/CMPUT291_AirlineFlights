@@ -3,6 +3,11 @@ import javax.swing.*;
 
 public class Main{
 
+	/** The width of the application window */
+	public static final int WIDTH = 300;
+
+	/** The height of the application window */
+	public static final int HEIGHT =200;
 
 	public static SQLLoginScreen sqllogin;
 	public static JFrame frame;
@@ -21,6 +26,8 @@ public class Main{
 		frame = new JFrame("Airport Bookings");
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.pack();
+		frame.setSize(WIDTH,HEIGHT);
+		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 		mainpanel = new JPanel();
 		frame.add(mainpanel);		
