@@ -129,7 +129,11 @@ public class UserScreen{
 		});
 		logout.addActionListener(new ActionListener(){
 			 public void actionPerformed(ActionEvent e){
-				 Main.currentuser.logout();
+				 try{
+					 Main.currentuser.setLastLogin();
+				 }catch(SQLException err){
+					 System.out.println("Cannot logout...you're stuck here forever.");
+				 }
 				 clear();
 				 lscreen = new UserLoginScreen();
 				 lscreen.init();

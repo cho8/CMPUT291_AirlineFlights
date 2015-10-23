@@ -156,7 +156,7 @@ public class AirlineSystem {
 		bookings_rs.updateInt("tno", tno);
 		bookings_rs.updateString("flightno", flightno);
 		bookings_rs.updateString("fare", u_fare);
-		bookings_rs.updateDate("dep_date", u_depDate);
+		bookings_rs.updateString("dep_date", u_depDate);
 		bookings_rs.updateString("seat", seat); //TODO:
 		bookings_rs.insertRow();
 
@@ -166,7 +166,7 @@ public class AirlineSystem {
 						"from bookings "+
 						"where tno="+tno+
 						" and flightno= '"+flightno+"'"+
-						" and dep_date="+u_depDate;
+						" and dep_date="+u_depDate;//TODO
 		ResultSet check_rs = stmt.executeQuery(checkBookingsQ);
 
 		if(!check_rs.next()) {
