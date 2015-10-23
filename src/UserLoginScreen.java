@@ -24,11 +24,10 @@ private JLabel message = new JLabel("");
 		
 		super.login.addActionListener(new ActionListener(){
 			 public void actionPerformed(ActionEvent e){
+				 Main.currentuser = new User(user.getText());
 				 try{
-					if( User.isUser(user.getText()) && 
-						User.checkPassword( user.getText(),String.valueOf(pwrd.getPassword()))){
-					 
-						 Main.currentuser = new User(user.getText());
+					if( Main.currentuser.isUser(user.getText()) && 
+						Main.currentuser.checkPassword( user.getText(),String.valueOf(pwrd.getPassword()))){
 						 clear();
 						 uscreen = new UserScreen();
 						 uscreen.init();
@@ -39,7 +38,7 @@ private JLabel message = new JLabel("");
 				 		message.setText("Invalid Login");
 				 	}
 				 } catch(SQLException f){
-					 System.err.println("Bad things are happening");
+					 System.err.println("Bad things are happening " + f.getMessage());
 				 }
 
 			 }
@@ -50,10 +49,11 @@ private JLabel message = new JLabel("");
 			 public void actionPerformed(ActionEvent e){
 				 
 				 try{
-					 if( User.isUser(user.getText()) && 
-						User.checkPassword( user.getText(),String.valueOf(pwrd.getPassword()))){
+					 if( Main.currentuser.isUser(user.getText()) && 
+						Main.currentuser.checkPassword( user.getText(),String.valueOf(pwrd.getPassword()))){
 							message.setText("User Already Exists");
-					 } else {		
+					 } else {
+						 
 				 		clear();
 				 		uscreen = new UserScreen();
 				 		uscreen.init();

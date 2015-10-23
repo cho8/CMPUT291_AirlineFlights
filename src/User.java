@@ -9,6 +9,7 @@ public class User{
 	private String u_email; //TODO
 
 	public User(String email) {
+		this.stmt = AirlineSystem.stmt;
 		u_email = email;
 	}
 
@@ -17,7 +18,7 @@ public class User{
 		String userT = 
 				"select email "+
 						"from users "+
-						"where email="+m_email;
+						"where email='"+m_email+"'";
 		ResultSet rs = stmt.executeQuery(userT);
 		if(rs.next()) {
 			return true;
@@ -25,30 +26,29 @@ public class User{
 			return false;
 		}
 	}
-	public void getConnection(Statement s, Connection c) {
-		stmt = s;
-		m_con = c;
-	}
+
 	public static boolean checkPassword(String m_email, String pw) throws SQLException {
 		String userT = 
-				"select email, password "+
+				"select email, pass "+
 						"from users "+
-						"where email="+m_email+
-						" and password="+pw;
+						"where email='"+m_email+
+						"' and pass='"+pw+"'";
 		ResultSet rs = stmt.executeQuery(userT);
 		return rs.next();
 	}
 	
-	public void createNewUser(String name, String country) throws SQLException {
-		String userT =
-				"select email, password, last_login "+
-						"from users ";
-		ResultSet rs = stmt.executeQuery(userT);
-		rs.moveToInsertRow();
-		rs.updateString("name", name);
-		rs.updateString("country", country);
-		rs.updateDate("date", null);
-		rs.insertRow();
+	public void createNewPassenger(String name, String country) throws SQLException {
+		String passenger =
+				"insert into passengers values (" + u_email + "," + name + "," + country + ")";
+		stmt.executeUpdate(passenger);
+
+	}
+	
+	public void createNewUser(String email, String pass) throws SQLException{
+		//check password
+		String newuser =
+				"insert into users values (" + email + "," + pass + ",null)";
+		stmt.executeUpdate(newuser);
 	}
 	
 	public String getEmail() {
