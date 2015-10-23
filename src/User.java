@@ -12,7 +12,7 @@ public class User{
 		u_email = email;
 	}
 
-	public boolean isUser(String m_email) throws SQLException {
+	public static boolean isUser(String m_email) throws SQLException {
 
 		String userT = 
 				"select email "+
