@@ -1,26 +1,36 @@
-import java.util.*;
 import java.sql.*;
-import java.io.*;
 
 public class User{
 	private static Statement stmt;
-	private static Connection m_con;
 
 	private String u_email; //TODO
+	private static boolean isAgent = false;
 
 	public User(String email) {
 		this.stmt = AirlineSystem.stmt;
 		u_email = email;
 	}
 
-	public static boolean isUser(String m_email) throws SQLException {
+	public String getEmail() {
+		return u_email;
+	}
 
-		String userT = 
+
+	public static boolean isUser(String m_email) throws SQLException {
+		String userQ = 
 				"select email "+
 						"from users "+
 						"where email='"+m_email+"'";
-		ResultSet rs = stmt.executeQuery(userT);
+		ResultSet rs = stmt.executeQuery(userQ);
+		
+
 		if(rs.next()) {
+			String agentQ = 
+					"select email "+
+							"from airline_agents "+
+							"where email='"+m_email+"'";
+			rs = stmt.executeQuery(agentQ);
+			isAgent = rs.next();
 			return true;
 		} else {
 			return false;
@@ -36,14 +46,14 @@ public class User{
 		ResultSet rs = stmt.executeQuery(userT);
 		return rs.next();
 	}
-	
+
 	public void createNewPassenger(String name, String country) throws SQLException {
 		String passenger =
 				"insert into passengers values (" + u_email + "," + name + "," + country + ")";
 		stmt.executeUpdate(passenger);
 
 	}
-	
+
 	public void createNewUser(String pass) throws SQLException{
 		//check password
 		String newuser =
@@ -51,8 +61,6 @@ public class User{
 
 		stmt.executeUpdate(newuser);
 	}
-	
-	public String getEmail() {
-		return u_email;
-	}
+
+
 }
