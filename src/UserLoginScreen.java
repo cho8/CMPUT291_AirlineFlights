@@ -21,33 +21,34 @@ private JLabel message = new JLabel("");
 		message.setForeground(Color.RED);
 		super.login.addActionListener(new ActionListener(){
 			 public void actionPerformed(ActionEvent e){
-//				 if(User.isUser(user.getText() && 
-//						 User.checkPassword(user.getText(),String.valueOf(pwrd.getPassword())))){
-//					 
-//					 	Main.currentuser = new User(user.getText());
-//				 clear();
-//				 uscreen = new UserScreen();
-//				 uscreen.init();
-//					Main.frame.validate();
-//					Main.frame.repaint();
-//					 
-//				 } else {
-					 message.setText("Invalid Login");
-//				 }
-
-			 }
-		});
-		super.signup.addActionListener(new ActionListener(){
-			 public void actionPerformed(ActionEvent e){
-//				 if(User.isUser(user.getText() && 
-//				 User.checkPassword(user.getText(),String.valueOf(pwrd.getPassword())))){
-				 message.setText("User Already Exists");
-//		 } else {		
+				 if(User.isUser(user.getText() && 
+					User.checkPassword(user.getText(),String.valueOf(pwrd.getPassword())))){
+					 	Main.currentuser = new User(user.getText());
 				 clear();
 				 uscreen = new UserScreen();
 				 uscreen.init();
 					Main.frame.validate();
 					Main.frame.repaint();
+					 
+				 } else {
+					 message.setText("Invalid Login");
+				 }
+
+			 }
+		});
+		super.signup.addActionListener(new ActionListener(){
+			
+			 public void actionPerformed(ActionEvent e){
+				 if(User.isUser(user.getText() && 
+				 User.checkPassword(user.getText(),String.valueOf(pwrd.getPassword())))){
+					 message.setText("User Already Exists");
+				 	} else {		
+				 		clear();
+				 		uscreen = new UserScreen();
+				 		uscreen.init();
+				 		Main.frame.validate();
+				 		Main.frame.repaint();
+				 	}
 			 }
 		});
 
