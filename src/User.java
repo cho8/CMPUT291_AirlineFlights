@@ -44,10 +44,10 @@ public class User{
 
 	}
 	
-	public void createNewUser(String email, String pass) throws SQLException{
+	public void createNewUser(String pass) throws SQLException{
 		//check password
 		String newuser =
-				"insert into users values (" + email + "," + pass + ",null)";
+				"insert into users values ('" + u_email + "','" + pass + "',null)";
 		stmt.executeUpdate(newuser);
 	}
 	

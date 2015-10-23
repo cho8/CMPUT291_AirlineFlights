@@ -53,7 +53,7 @@ private JLabel message = new JLabel("");
 						Main.currentuser.checkPassword( user.getText(),String.valueOf(pwrd.getPassword()))){
 							message.setText("User Already Exists");
 					 } else {
-						 
+						Main.currentuser.createNewUser(String.valueOf(pwrd.getPassword())); 
 				 		clear();
 				 		uscreen = new UserScreen();
 				 		uscreen.init();
