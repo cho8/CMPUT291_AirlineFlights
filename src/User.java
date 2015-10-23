@@ -11,11 +11,11 @@ public class User{
 	public User(String email) {
 		u_email = email;
 	}
-	public boolean isUser() throws SQLException {
+	public static boolean isUser(String m_email) throws SQLException {
 		String userT = 
 				"select email "+
 						"from users "+
-						"where email="+u_email;
+						"where email="+m_email;
 		ResultSet rs = stmt.executeQuery(userT);
 		if(rs.next()) {
 			return true;
@@ -27,7 +27,7 @@ public class User{
 		stmt = s;
 		m_con = c;
 	}
-	public boolean checkPassword(String m_email, String pw) throws SQLException {
+	public static boolean checkPassword(String m_email, String pw) throws SQLException {
 		String userT = 
 				"select email, password "+
 						"from users "+
