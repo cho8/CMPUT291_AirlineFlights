@@ -16,11 +16,12 @@ public class SQLLoginScreen extends LoginScreen{
 		super.login.addActionListener(new ActionListener(){
 			 public void actionPerformed(ActionEvent e){
 				 try{
-				 SQLController.makeConnection(user.getText(),
+					 AirlineFlights flights = new AirlineFlights();
+					 flights.makeConnection(user.getText(),
 						 String.valueOf(pwrd.getPassword()));
-				 } catch(SQLException err) {
+				 	} catch(SQLException err) {
 					 System.out.println("fail");
-				 }
+				 	}
 				 clear();
 				 userlogin = new UserLoginScreen();
 				 userlogin.init();

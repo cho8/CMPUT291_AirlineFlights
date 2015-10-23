@@ -7,7 +7,7 @@ public class Main{
 	public static SQLLoginScreen sqllogin;
 	public static JFrame frame;
 	public static JPanel mainpanel;
-	//public static User currentuser;
+	public static User currentuser;
 
 	public static void main(String[] args){
 		javax.swing.SwingUtilities.invokeLater(new Runnable(){
