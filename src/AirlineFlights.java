@@ -7,14 +7,49 @@ public class AirlineFlights {
 	static Statement stmt;
 	static Connection m_con;
 	static String m_url = "jdbc:oracle:thin:@gwynne.cs.ualberta.ca:1521:CRS";
+	String m_driverName = "oracle.jdbc.driver.OracleDriver";
 
 	static User user;
 	static List<Integer> tix = new ArrayList<Integer>();
-	public void makeConnection(String o_uname, String o_pw) throws SQLException {
-		m_con = DriverManager.getConnection(m_url, o_uname, o_pw);
+
+	static List<String> seats = new ArrayList<String>();
+
+	public void makeConnection(String m_userName, String m_password){
+
+		try {
+			Class drvClass = Class.forName(m_driverName); 
+			// DriverManager.registerDriver((Driver)drvClass.newInstance());- not needed. 
+			// This is automatically done by Class.forName().
+		} catch(Exception e) {
+			System.err.print("ClassNotFoundException: ");
+			System.err.println(e.getMessage());
+		} 
+
+		try{
+			// Establish a connection
+			m_con = DriverManager.getConnection(m_url, m_userName,
+					m_password);
+			// Changed to reflect changes made in the result set and to make these changes permanent to the database too
+			
+		}  catch(SQLException ex) {
+			System.err.println("SQLException: " +
+					ex.getMessage());
+		}
 		
+		try {
+			stmt = m_con.createStatement(
+					ResultSet.TYPE_SCROLL_SENSITIVE, 
+					ResultSet.CONCUR_UPDATABLE);
+		} catch(SQLException er) {
+			System.err.println("SecondException: "+ er.getMessage());
+		}
 	}
-	
+
+	public void stopConnection() throws SQLException {
+		stmt.close();
+		m_con.close();
+	}
+
 	public static ResultSet searchFlights(String u_src, String u_dst, String u_depDate, String u_sortBy, String u_sortOrder) throws SQLException{
 
 
@@ -66,7 +101,6 @@ public class AirlineFlights {
 		// print out the thing
 		return rs;
 	}
-
 	public static boolean checkPassengers(String u_name) throws SQLException {
 		String psgTable = 
 				"select name, email, country "+
@@ -119,9 +153,15 @@ public class AirlineFlights {
 		}
 		return n;
 	}
-	
-	private static void updateBookingsTickets(String u_name, String email, String flightno, Float u_price, 
-			String u_fare, Date u_depDate, String u_seat) throws SQLException {
+	private static String generateSeat(String fare){
+
+
+		return null;
+
+	}
+
+	public static void makeBookings(String u_name, String email, String flightno, Float u_price, 
+			String u_fare, Date u_depDate) throws SQLException {
 		int tno = generateTix();
 		String bTable = 
 				"select tno, flightno, fare, dep_date, seat "+ 
@@ -143,7 +183,7 @@ public class AirlineFlights {
 		bookings_rs.updateString("flightno", flightno);
 		bookings_rs.updateString("fare", u_fare);
 		bookings_rs.updateDate("dep_date", u_depDate);
-		bookings_rs.updateString("seat", u_seat);
+		bookings_rs.updateString("seat", null); //TODO: seat
 		bookings_rs.insertRow();
 		// check
 		m_con.commit();
@@ -158,34 +198,8 @@ public class AirlineFlights {
 		// print out the thing
 		return rs;
 	}
-	public static void main(String args[]) {
-		String m_driverName = "oracle.jdbc.driver.OracleDriver";
 
-		try {
-			Class drvClass = Class.forName(m_driverName);
-		} catch(Exception e) {
-			System.err.print("ClassNotFoundException: ");
-			System.err.println(e.getMessage());
-		}
+	public static void cancelBooking(String flightno) throws SQLException {
 
-		
-
-		try {
-			stmt = m_con.createStatement(
-					ResultSet.TYPE_SCROLL_SENSITIVE,
-					ResultSet.CONCUR_UPDATABLE);
-
-			/****** query stuff goes here *******/
-			String email;
-			user = new User(user.getEmail()); //TODO: login and get user info
-
-
-
-			/******************/
-			stmt.close();
-			m_con.close();
-		} catch(SQLException ex) {
-			System.err.println("SQLException: " + ex.getMessage());
-		}
 	}
 }

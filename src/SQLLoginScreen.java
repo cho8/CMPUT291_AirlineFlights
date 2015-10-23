@@ -21,6 +21,10 @@ public class SQLLoginScreen extends LoginScreen{
 						 String.valueOf(pwrd.getPassword()));
 				 	} catch(SQLException err) {
 					 System.out.println("fail");
+				 	} catch(Exception e) {
+						System.err.print("ClassNotFoundException: ");
+						System.err.println(e.getMessage());
+					}
 				 	}
 				 clear();
 				 userlogin = new UserLoginScreen();
