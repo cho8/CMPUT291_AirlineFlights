@@ -41,7 +41,7 @@ public class AirlineFlights {
 					ResultSet.TYPE_SCROLL_SENSITIVE, 
 					ResultSet.CONCUR_UPDATABLE);
 		} catch(SQLException er) {
-			Sysstem.err.println("SecondException: "+ex.getMessage());
+			System.err.println("SecondException: "+ er.getMessage());
 		}
 	}
 
@@ -200,19 +200,6 @@ public class AirlineFlights {
 	}
 
 	public static void cancelBooking(String flightno) throws SQLException {
-
-	}
-	public static void main(String args[]) {
-
-
-
-
-		/****** query stuff goes here *******/
-
-
-
-		/******************/
-
 
 	}
 }

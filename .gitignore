@@ -1,0 +1,14 @@
+$ cat .gitignore
+
+# Can ignore specific files
+.DS_STORE
+
+# Use wildcards as well
+*~
+*.swp
+
+
+# Can also ignore all directories and files in a directory.
+bin/*
+
+git rm —cached
