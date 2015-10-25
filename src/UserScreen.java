@@ -8,11 +8,10 @@ import java.sql.SQLException;
 
 
 public class UserScreen{
-	public static final int APPLICATION_WIDTH = 750;
-
-	/** The height of the application window */
+	public static final int APPLICATION_WIDTH = 800;
 	public static final int APPLICATION_HEIGHT = 400;
 	public static final int TEXT_FIELD_SIZE = 15;
+	
 	private static final String[] months = {"January","February","March","April",
 			"May","June","July","August","September","October","November","December"};
 	
@@ -76,8 +75,11 @@ public class UserScreen{
 	}
 	
 	public void init(){
-		Main.frame.setSize(APPLICATION_WIDTH, APPLICATION_HEIGHT);
-		Main.mainpanel.setLayout(new GridLayout(1,3,5,5));
+		Main.frame.setSize(APPLICATION_WIDTH+20, APPLICATION_HEIGHT+40);
+		centrep.setPreferredSize(new Dimension(APPLICATION_WIDTH/2,APPLICATION_HEIGHT));
+		leftp.setPreferredSize(new Dimension(APPLICATION_WIDTH/4,APPLICATION_HEIGHT));
+		rightp.setPreferredSize(new Dimension(APPLICATION_WIDTH/4,APPLICATION_HEIGHT));
+		Main.mainpanel.setLayout(new FlowLayout());//(new GridLayout(1,3,5,5));
 		
 		leftp.add(new JLabel("Source"));
 		leftp.add(src);
@@ -89,7 +91,7 @@ public class UserScreen{
 		leftp.add(yearbox);
 		leftp.add(searchf);
 		leftp.add(logout);
-		
+
 		centrep.add(scrollPane);
 		
 		rightp.add(create);
@@ -187,11 +189,11 @@ public class UserScreen{
 	private void displayFlights(){
 		
 		try{
-		String flight1 = results.getString("flightno1");
-		String flight2 = results.getString("flightno2");
+		String flight1 = "Flight 1: " + results.getString("flightno1") +", ";
+		String flight2 = "Flight 2: " + results.getString("flightno2") + ", ";
 		String flight3;
 		if(multipleConnections()){
-			flight3 = results.getString("flightno3");
+			flight3 = "Flight 3: " + results.getString("flightno3") + ", ";
 		}else{
 			flight3 = "";
 		}
@@ -202,15 +204,17 @@ public class UserScreen{
 			if(stops == 0){
 				layover = "";
 			}else{
-				layover = String.valueOf(results.getFloat("layover"));
+				layover = "Layover Time: "  
+						+ String.valueOf(results.getFloat("layover")) + ", ";
 			}
-			String resultitem = results.getString("src")+","
-					+results.getString("dest")+","
-					+flight1 + flight2 + flight3
-					+stops+layover+results.getFloat("price")
-					+results.getDate("dep_time").toString()
-					+results.getDate("arr_time").toString()
-					+results.getInt("seats");
+			String resultitem = "Source: " + results.getString("src")
+					+", Destination: "+ results.getString("dest") + ", "
+					+ flight1 + flight2 + flight3
+					+ "Stops: " + stops + ", " + layover + "Price: " 
+					+ results.getFloat("price") + ", Departure Time: "
+					+ results.getDate("dep_time").toString() + ", Arrival Time: "
+					+ results.getDate("arr_time").toString() + ", Available Seats: "
+					+ results.getInt("seats");
 			model.addElement(resultitem);
 		}
 		} catch(SQLException e){
