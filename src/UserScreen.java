@@ -8,21 +8,20 @@ import java.sql.SQLException;
 
 
 public class UserScreen{
-	/** The width of the application window */
+	//The width of the application window
 	public static final int APPLICATION_WIDTH = 800;
-	/** The height of the application window */
+	//The height of the application window 
 	public static final int APPLICATION_HEIGHT = 400;
-	/** Number of characters for each of the text input fields */
+	//Number of characters for each of the text input fields
 	public static final int TEXT_FIELD_SIZE = 15;
-	
+	//Month strings for drop-down menu.
 	private static final String[] months = {"January","February","March","April",
 			"May","June","July","August","September","October","November","December"};
 	
 	private UserLoginScreen lscreen;
-	private static JComboBox<String> monthbox;
-	private static JComboBox<Integer> datebox;
+	private JComboBox<String> monthbox;
+	private JComboBox<Integer> datebox;
 	private JComboBox<Integer> yearbox;
-	
 	private JPanel leftp = new JPanel();
 	private JPanel rightp = new JPanel();
 	private JPanel centrep = new JPanel();
@@ -156,7 +155,7 @@ public class UserScreen{
 						create.setText("Confirm Booking");
 					} else {
 						create.setText("Create Booking");
-						//Try to create booking
+						createBooking();
 					}
 
 				 System.out.println(myList.getSelectedValue());
@@ -180,10 +179,21 @@ public class UserScreen{
 		});
 	}
 	
+	private void createBooking(){
+//		try{
+//			
+//		}catch(SQLException e){
+//			
+//		}
+	}
 	private void getFlights(){
-		String date = yearbox.getSelectedItem()+"-"+(monthbox.getSelectedIndex()+1)+"-"+datebox.getSelectedIndex();
+		String date = yearbox.getSelectedItem()+"-"+(monthbox.getSelectedIndex()+1)+"-"+datebox.getSelectedItem();
 		System.out.println(date);
-		//results = searchFlights(src.getText(),dest.getText(),date);
+		try{
+			results = AirlineSystem.searchFlightsStandard(src.getText(),dest.getText(),date);
+		}catch(SQLException e){
+			System.out.println("Can't Find Flights " + e.getMessage());
+		}
 		
 	}
 	
@@ -191,6 +201,8 @@ public class UserScreen{
 		return false;
 	}
 	private void displayFlights(){
+		model.clear();
+		boolean areflights = false;
 		
 		try{
 		String flight1 = "Flight 1: " + results.getString("flightno1") +", ";
@@ -203,6 +215,7 @@ public class UserScreen{
 		}
 		
 		while(results.next()){
+			areflights = true;
 			Integer stops = results.getInt("stops");
 			String layover;
 			if(stops == 0){
@@ -223,6 +236,10 @@ public class UserScreen{
 		}
 		} catch(SQLException e){
 			System.out.println("Can't get Flights");
+		}
+		
+		if (!areflights){
+			model.addElement("No Available Flights");
 		}
 	}
 	

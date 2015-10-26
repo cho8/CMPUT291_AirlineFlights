@@ -3,10 +3,10 @@ import javax.swing.*;
 
 public class Main{
 
-	/** The width of the application window */
+	//The width of the application window 
 	public static final int WIDTH = 300;
 
-	/** The height of the application window */
+	// The height of the application window 
 	public static final int HEIGHT =200;
 
 	public static SQLLoginScreen sqllogin;
