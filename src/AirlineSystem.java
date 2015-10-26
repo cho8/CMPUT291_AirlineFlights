@@ -63,6 +63,14 @@ public class AirlineSystem {
 				"a1.tzone, fa.fare, fa.limit, fa.price "+
 				"having fa.limit-count(tno) > 0";
 
+		stmt.executeUpdate("drop view available_flights");
+		stmt.executeUpdate(searchAvailable);
+	}
+
+
+	public static ResultSet searchFlightsStandard(String u_src, String u_dst, String u_depDate, String orderBy) throws SQLException{
+
+		flightsQuery(u_src, u_dst, u_depDate);
 		String goodConnect = "create view good_connections (src,dst,dep_date,flightno1,flightno2, layover,price, seats, dep_time, arr_time, stops) as "+
 				"select a1.src, a2.dst, a1.dep_date, a1.flightno, a2.flightno, " +
 				"(a2.dep_time-a1.arr_time)*24, a1.price+a2.price, case when a1.seats <= a2.seats then a1.seats else a2.seats end, a1.dep_time, a2.arr_time, 1 stops "+
@@ -70,14 +78,6 @@ public class AirlineSystem {
 				"where a1.dst=a2.src "+
 				"group by a1.src, a2.dst, a1.dep_date, a1.flightno, a2.flightno, "+
 				"a2.dep_time, a1.arr_time, a1.price+a2.price, a1.seats, a2.seats, a1.dep_time, a2.arr_time";
-		stmt.executeUpdate("drop view available_flights");
-		stmt.executeUpdate("drop view good_connections");
-		stmt.executeUpdate(searchAvailable);
-		stmt.executeUpdate(goodConnect);
-	}
-	public static ResultSet searchFlightsStandard(String u_src, String u_dst, String u_depDate) throws SQLException{
-
-		flightsQuery(u_src, u_dst, u_depDate);
 		String viewFlightsQ = "select src, dst, dep_date, flightno1, flightno2, layover, price, stops, seats, dep_time, arr_time "+
 				"from (select src, dst, dep_date, flightno1, flightno2, layover, price, 1 stops, seats, dep_time, arr_time "+
 				"from good_connections "+
@@ -86,14 +86,24 @@ public class AirlineSystem {
 				"select src, dst, dep_date, flightno flightno1, '' flightno2, 0 layover, price, 0 stops, seats, dep_time, arr_time "+
 				"from available_flights "+
 				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char(dep_date,'DD-MM-YYYY')='"+u_depDate+"') "+
-				"order by price asc";
+				"order by "+orderBy; //price asc
+
+		stmt.executeUpdate("drop view good_connections");
+		stmt.executeUpdate(goodConnect);
 		ResultSet rs = stmt.executeQuery(viewFlightsQ);
 		//return result set to display on gui
 		return rs;
 	}
 
-	public static ResultSet searchFlightsThreeFlights(String u_src, String u_dst, String u_depDate) throws SQLException{
+	public static ResultSet searchFlightsModified(String u_src, String u_dst, String u_depDate, String orderBy) throws SQLException{
 		flightsQuery(u_src, u_dst, u_depDate);
+		String goodConnect2 = "create view good_connections2 (src, dst, dep_date, flightno1, flightno2, flightno3, layover, layover2, price, seats, dep_time, arr_time, stops) as "+
+				"select a1.src, a3.dst, a1.dep_date, a1.flightno, a2.flightno, a3.flightno, a2.dep_time-a1.arr_time, a3.dep_time-a2.arr_time , "+
+				"a1.price+a2.price+a3.price, case when a1.seats <= a2.seats and a1.seats <= a3.seats then a1.seats when a2.seats <= a3.seats then a2.seats else a3.seats end, a1.dep_time, a3.arr_time, 2 stops "+
+				"from available_flights a1, available_flights a2, available_flights a3 "+
+				"where a1.dst=a2.src and a2.dst=a3.src "+
+				"group by a1.src, a3.dst, a1.dep_date, a1.flightno, a2.flightno, a3.flightno, a2.dep_time, a1.arr_time, a3.dep_time, a2.arr_time, "+
+				"a1.price+a2.price+a3.price, a1.seats, a2.seats, a3.seats, a1.dep_time, a3.arr_time";
 		String viewFlightsQ = "select src, dst, dep_date, flightno1, flightno2, flightno3, layover, layover2, price, stops, seats, dep_time, arr_time "+
 				"from (select src, dst, dep_date, flightno1, flightno2, '' flightno3, layover, 0 layover2, price, 1 stops, seats, dep_time, arr_time "+
 				"from good_connections "+
@@ -101,12 +111,14 @@ public class AirlineSystem {
 				"union "+
 				"select src, dst, dep_date, flightno flightno1, '' flightno2, '' flightno3, 0 layover, 0 layover2, price, 0 stops, seats, dep_time, arr_time "+
 				"from available_flights "+
-				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char(dep_date,'DD-MM/YYYY')='"+u_depDate+"' "+
+				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char(dep_date,'DD-MM-YYYY')='"+u_depDate+"' "+
 				"union "+
 				"select src, dst, dep_date, flightno1, flightno2, flightno3, layover, layover2, price, 2 stops, seats, dep_time, arr_time "+
 				"from good_connections2 "+
-				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char(dep_date,'DD/MM/YYYY')='"+u_depDate+"') "+
-				"order by stops asc, price asc";
+				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char(dep_date,'DD-MM-YYYY')='"+u_depDate+"') "+
+				"order by "+orderBy; //stops asc, price asc";
+		stmt.executeUpdate("drop view good_connections2");
+		stmt.executeUpdate(goodConnect2);
 		ResultSet rs = stmt.executeQuery(viewFlightsQ);
 		return rs;
 	}
@@ -129,42 +141,61 @@ public class AirlineSystem {
 			p_rs.updateRow();
 		}
 	}
-	private static int generateTix() throws SQLException {
-		Random rn = new Random();
-		int n = rn.nextInt();
-		String ticketNumsQ = 
+
+	private static Boolean checkTicket(int n) throws SQLException {
+		// check if ticket is unique
+		String tnoQ = 
 				"select tno "+
 						"from tickets "+
-						"where tno= '"+n+"'";
-		ResultSet rs = stmt.executeQuery(ticketNumsQ);
-		while (rs.next()) {
+						"where tno='"+n+"'";
+		ResultSet rs = stmt.executeQuery(tnoQ);
+		return rs.next();
+	}
+	private static int generateTix() throws SQLException {
+
+		Random rn = new Random();
+		int n = rn.nextInt();
+		while (checkTicket(n))
 			n = rn.nextInt();
-			rs = stmt.executeQuery(ticketNumsQ);
-		}
-		// regenerate and requery db if tno already exists
 		return n;
 	}
-	private static String generateSeat() throws SQLException{
-		Random rn = new Random();
-		String n = String.valueOf(rn.nextInt(99)) + (char)((rn.nextInt(6) + 'A'));
+
+	private static Boolean checkSeat(String seat) throws SQLException {
+		//check if seat not taken
 		String seatsQ = 
 				"select seat "+
-						"from bookings "+
-						"where seat='"+n+"'";
+						"from available_flights a1, available_flights a2"+
+						"where a1.flightno=a2.flightno "+
+						"and a1.dep_date = a2.dep_date "+
+						"and a1.seat<>a2.seat";
 		ResultSet rs = stmt.executeQuery(seatsQ);
-		// regenerate and requery db if seat already exists
-		while (rs.next()) {
-			n = String.valueOf(rn.nextInt(99)) + (char)((rn.nextInt(6) + 'A'));;
-			rs = stmt.executeQuery(seatsQ);
-		}
-		return n;
-
+		return rs.next();
 	}
 
+	private static String generateSeat() throws SQLException{
+		Random rn = new Random();
+		String n = String.valueOf(rn.nextInt(30)) + (char)((rn.nextInt(6) + 'A')); // realistically, a flight does not have 99 rows
 
-	public static String makeBookings(String u_name, String email, String flightno, Float u_price, 
+		// regenerate if seat exists
+		while (checkSeat(n)) 
+			n = String.valueOf(rn.nextInt(30)) + (char)((rn.nextInt(6) + 'A'));;
+			return n;
+	}
+
+	private static Boolean checkBooking(int tno, String seat) throws SQLException {
+		// check if flight still available
+		String checkFlightQ = "select flightno, dep_date"+
+				"from available_flights a1, available_flights a2 "+
+				"where a1.flightno=a2.flightno "+
+				"and a1.dep_date=a2.dep_date";
+		ResultSet checkFlight = stmt.executeQuery(checkFlightQ);	
+		return (checkFlight.next() && checkSeat(seat) && checkTicket(tno));
+	}
+
+	public static Boolean makeBookings(String u_name, String email, String flightno, Float u_price, 
 			String u_fare, String u_depDate) throws SQLException {
 
+		// should we do all conversions in the system? ie pass all values into this method as strings?
 		String bookingsQ = 
 				"select tno, flightno, fare, dep_date, seat "+ 
 						"from bookings";
@@ -182,64 +213,55 @@ public class AirlineSystem {
 		tickets_rs.updateString("name", u_name);
 		tickets_rs.updateString("email", user.getEmail());
 		tickets_rs.updateFloat("paid_price", u_price);
-		tickets_rs.insertRow();
 		bookings_rs.updateInt("tno", tno);
 		bookings_rs.updateString("flightno", flightno);
 		bookings_rs.updateString("fare", u_fare);
-		bookings_rs.updateString("dep_date", u_depDate);
+		bookings_rs.updateDate("dep_date", Date.valueOf(u_depDate));
 		bookings_rs.updateString("seat", seat); //TODO:
-		bookings_rs.insertRow();
 
-		// check
-		String checkBookingsQ =
-				"select tno, flightno, fare, dep_date, seat "+
-						"from bookings "+
-						"where tno="+tno+
-						" and flightno= '"+flightno+"'"+
-						" and dep_date="+u_depDate;//TODO
-		ResultSet check_rs = stmt.executeQuery(checkBookingsQ);
-
-		if(!check_rs.next()) {
+		if(checkBooking(tno, seat)) {
+			tickets_rs.insertRow();
+			bookings_rs.insertRow();
 			m_con.commit();
 			m_con.setAutoCommit(true);
 			//TODO: confirmation message in the GUI
-			return "Did the thing!";
+			return true;
 		} else {
 			//TODO: 
 			m_con.setAutoCommit(true);
-			return "Couldn't do the thing";
+			// return whether the booking failed, what we do hereafter depends on design choice
+			return false;
 		}
 
 	}
 	public static ResultSet listBookings() throws SQLException {
-		String bookingInfoQ =
-				"select b.tno, t.name, b.dep_date, t.paid_price "+
+		String bookingInfoQ = "select b.tno, t.name, b.dep_date, t.paid_price "+
 						"from bookings b, tickets t "+
 						"where b.tno=t.tno "+
 						"and t.email = '"+user.getEmail()+"'";
 		ResultSet rs = stmt.executeQuery(bookingInfoQ);
-		// TODO: print out the freaking thing in the GUI
+		// TODO: print out in the GUI
 		return rs;
 	}
 
 	public static ResultSet bookingDetail() throws SQLException {
-		String detailQ = // TODO: display a whole bunch of crap for this booking
-				"";
+		String detailQ = "select "+
+				"from bookings b, tickets t, ";// TODO: display more information, design choice
+
 		ResultSet rs = stmt.executeQuery(detailQ);
 		return rs;
 	}
 
 	public static void cancelBooking(int u_tno, String u_flightno, String u_dep_date, String u_seat) throws SQLException {
-		String bookingsQ = 
-				"delete from bookings "+
+		String bookingsQ = "delete from bookings "+
 						"where flightno= '"+u_flightno+"'"+
 						" and dep_date="+u_dep_date+
 						" and tno="+u_tno;
-		String ticketsQ = 
-				"delete from tickets "+
+		String ticketsQ = "delete from tickets "+
 						"where tno="+u_tno;
 
 		stmt.executeUpdate(bookingsQ);
+		stmt.executeUpdate(ticketsQ);
 	}
 
 }
