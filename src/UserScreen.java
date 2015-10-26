@@ -197,6 +197,27 @@ public class UserScreen{
 		
 	}
 	
+	private void displayBookings(){
+		model.clear();
+		try{
+		ResultSet bookings = AirlineSystem.listBookings();
+		
+		while(bookings.next()){
+			String booking = "Ticket: " + bookings.getString("tno") 
+				+ ", Name: " + bookings.getString("name")
+				+ ", Departure Date: " + bookings.getDate("dep_date").toString()
+				+ ", Paid Price: " + bookings.getFloat("paid_price");
+			model.addElement(booking);
+		}
+		}catch(SQLException e){
+			System.out.println("Can't Fetch Bookings " + e.getMessage());
+		}
+		
+	}
+	
+	private void displayDetailBooking(){
+		//More Details about booking.
+	}
 	private boolean multipleConnections(){
 		return false;
 	}
