@@ -1,39 +1,17 @@
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
 import java.sql.SQLException;
-
-import javax.swing.*;
 
 public class UserLoginScreen extends LoginScreen{
 	
-private UserScreen uscreen;
-private JLabel message = new JLabel("");
+	private UserScreen uscreen;
 	
 	public void init(){
-		super.ulabel.setText("Email:");
-		panel.add(ulabel);
-		panel.add(user);
-		panel.add(plabel);
-		panel.add(pwrd);
-		panel.add(login);
-		panel.add(signup);
-		panel.add(message);
-		message.setFont(new Font("Sans Serif", Font.BOLD, 14));
-		message.setForeground(Color.RED);
+		super.init();
+		signup.setVisible(true);
+		ulabel.setText("Email:");
 		
-		pwrd.addKeyListener(new KeyAdapter(){
-			public void keyPressed(KeyEvent e){
-				System.out.println("Some key pressed");
-				if(e.getKeyCode() == KeyEvent.VK_ENTER){
-					login.doClick();
-				}
-			}
-		});
-		
-		super.login.addActionListener(new ActionListener(){
+		login.addActionListener(new ActionListener(){
 			 public void actionPerformed(ActionEvent e){
 				 Main.currentuser = new User(user.getText());
 				 try{
@@ -47,6 +25,7 @@ private JLabel message = new JLabel("");
 					 
 				 	} else {
 				 		message.setText("Invalid Login");
+				 		message.repaint();
 				 	}
 				 } catch(SQLException f){
 					 System.err.println("Bad things are happening " + f.getMessage());
@@ -55,7 +34,7 @@ private JLabel message = new JLabel("");
 			 }
 		});
 		
-		super.signup.addActionListener(new ActionListener(){
+		signup.addActionListener(new ActionListener(){
 			
 			 public void actionPerformed(ActionEvent e){
 				 

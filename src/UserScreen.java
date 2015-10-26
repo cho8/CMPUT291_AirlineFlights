@@ -8,8 +8,11 @@ import java.sql.SQLException;
 
 
 public class UserScreen{
+	/** The width of the application window */
 	public static final int APPLICATION_WIDTH = 800;
+	/** The height of the application window */
 	public static final int APPLICATION_HEIGHT = 400;
+	/** Number of characters for each of the text input fields */
 	public static final int TEXT_FIELD_SIZE = 15;
 	
 	private static final String[] months = {"January","February","March","April",
@@ -75,11 +78,11 @@ public class UserScreen{
 	}
 	
 	public void init(){
-		Main.frame.setSize(APPLICATION_WIDTH+20, APPLICATION_HEIGHT+40);
+		Main.frame.setSize(APPLICATION_WIDTH+20, APPLICATION_HEIGHT+40);//I have to add to the dimensions here for some reason to get it to display properly.
 		centrep.setPreferredSize(new Dimension(APPLICATION_WIDTH/2,APPLICATION_HEIGHT));
 		leftp.setPreferredSize(new Dimension(APPLICATION_WIDTH/4,APPLICATION_HEIGHT));
 		rightp.setPreferredSize(new Dimension(APPLICATION_WIDTH/4,APPLICATION_HEIGHT));
-		Main.mainpanel.setLayout(new FlowLayout());//(new GridLayout(1,3,5,5));
+		Main.mainpanel.setLayout(new FlowLayout());
 		
 		leftp.add(new JLabel("Source"));
 		leftp.add(src);
@@ -134,7 +137,8 @@ public class UserScreen{
 				 try{
 					 Main.currentuser.setLastLogin();
 				 }catch(SQLException err){
-					 System.out.println("Cannot logout...you're stuck here forever.");
+					 System.out.println("Cannot logout...you're stuck here forever. "
+							 + err.getMessage());
 				 }
 				 clear();
 				 lscreen = new UserLoginScreen();
