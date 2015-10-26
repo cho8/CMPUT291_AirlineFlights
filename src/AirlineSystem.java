@@ -50,10 +50,30 @@ public class AirlineSystem {
 	}
 
 	public static ResultSet searchFlights(String u_src, String u_dst, String u_depDate) throws SQLException{
-		//TODO:
+		String searchAvailable = "create view available_flights(flightno,dep_date, src,dst,dep_time,arr_time,fare,seats, "+
+				"price) as "+
+				"select f.flightno, sf.dep_date, f.src, f.dst, f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time)), "+
+				"f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time))+(f.est_dur/60+a2.tzone-a1.tzone)/24, "+
+				"fa.fare, fa.limit-count(tno), fa.price "+
+				"from flights f, flight_fares fa, sch_flights sf, bookings b, airports a1, airports a2 "+
+				"where f.flightno=sf.flightno and f.flightno=fa.flightno and f.src=a1.acode and "+
+				"f.dst=a2.acode and fa.flightno=b.flightno(+) and fa.fare=b.fare(+) and "+
+				"sf.dep_date=b.dep_date(+) "+
+				"group by f.flightno, sf.dep_date, f.src, f.dst, f.dep_time, f.est_dur,a2.tzone, "+
+				"a1.tzone, fa.fare, fa.limit, fa.price "+
+				"having fa.limit-count(tno) > 0";
 
-		
-		return null;
+		String goodConnect = "create view good_connections (src,dst,dep_date,flightno1,flightno2, layover,price, seats, dep_time, arr_time, stops) as "+
+				"select a1.src, a2.dst, a1.dep_date, a1.flightno, a2.flightno, " +
+				"(a2.dep_time-a1.arr_time)*24, a1.price+a2.price, case when a1.seats <= a2.seats then a1.seats else a2.seats end, a1.dep_time, a2.arr_time, 1 stops "+
+				"from available_flights a1, available_flights a2 "+
+				"where a1.dst=a2.src "+
+				"group by a1.src, a2.dst, a1.dep_date, a1.flightno, a2.flightno, "+
+				"a2.dep_time, a1.arr_time, a1.price+a2.price, a1.seats, a2.seats, a1.dep_time, a2.arr_time";
+		stmt.executeUpdate(searchAvailable);
+		ResultSet rs = stmt.executeQuery(goodConnect);
+		//return result set to display on gui
+		return rs;
 	}
 	public static boolean checkPassengers(String u_name) throws SQLException {
 		String psgTable = 
@@ -212,5 +232,5 @@ public class AirlineSystem {
 						" and email='"+user.getEmail();
 		stmt.executeUpdate(bookingsQ);
 	}
-	
+
 }

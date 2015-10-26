@@ -64,7 +64,7 @@ public class User{
 
 	public void setLastLogin() throws SQLException{
 		String lastLoginQ =
-				"UPDATE table_name "+
+				"UPDATE users "+
 						"SET last_login= to_date(sysdate, 'dd-mon-yyyy') "+
 						"WHERE email= '"+u_email+"'";
 		stmt.executeUpdate(lastLoginQ);
