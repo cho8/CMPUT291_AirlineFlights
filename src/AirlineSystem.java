@@ -35,7 +35,7 @@ public class AirlineSystem {
 
 	}
 
-	public void stopConnection() throws SQLException {
+	public void closeConnection() throws SQLException {
 		stmt.close();
 		m_con.close();
 	}
@@ -60,7 +60,7 @@ public class AirlineSystem {
 
 
 	public static ResultSet searchFlightsStandard(String u_src, String u_dst, String u_depDate, String orderBy) throws SQLException{
-
+		
 		flightsQuery(u_src, u_dst, u_depDate);
 		String goodConnect = "create view good_connections (src,dst,dep_date,flightno1,flightno2, layover,price, seats, dep_time, arr_time, stops) as "+
 				"select a1.src, a2.dst, a1.dep_date, a1.flightno, a2.flightno, " +
@@ -82,11 +82,12 @@ public class AirlineSystem {
 		stmt.executeUpdate("drop view good_connections");
 		stmt.executeUpdate(goodConnect);
 		ResultSet rs = stmt.executeQuery(viewFlightsQ);
-		//return result set to display on gui
+		//return resultset to display on gui
 		return rs;
 	}
 
 	public static ResultSet searchFlightsModified(String u_src, String u_dst, String u_depDate, String orderBy) throws SQLException{
+		
 		flightsQuery(u_src, u_dst, u_depDate);
 		String goodConnect2 = "create view good_connections2 (src, dst, dep_date, flightno1, flightno2, flightno3, layover, layover2, price, seats, dep_time, arr_time, stops) as "+
 				"select a1.src, a3.dst, a1.dep_date, a1.flightno, a2.flightno, a3.flightno, a2.dep_time-a1.arr_time, a3.dep_time-a2.arr_time , "+
@@ -111,6 +112,7 @@ public class AirlineSystem {
 		stmt.executeUpdate("drop view good_connections2");
 		stmt.executeUpdate(goodConnect2);
 		ResultSet rs = stmt.executeQuery(viewFlightsQ);
+		//return resultset to display on gui
 		return rs;
 	}
 
@@ -142,6 +144,7 @@ public class AirlineSystem {
 		ResultSet rs = stmt.executeQuery(tnoQ);
 		return rs.next();
 	}
+	
 	private static int generateTix() throws SQLException {
 
 		Random rn = new Random();
@@ -163,16 +166,6 @@ public class AirlineSystem {
 		return rs.next();
 	}
 
-	private static String generateSeat() throws SQLException{
-		Random rn = new Random();
-		String n = String.valueOf(rn.nextInt(30)) + (char)((rn.nextInt(6) + 'A')); // realistically, a flight does not have 99 rows
-
-		// regenerate if seat exists
-		while (checkSeat(n)) 
-			n = String.valueOf(rn.nextInt(30)) + (char)((rn.nextInt(6) + 'A'));;
-			return n;
-	}
-
 	private static Boolean checkBooking(int tno, String seat) throws SQLException {
 		// check if flight still available
 		String checkFlightQ = "select flightno, dep_date"+
@@ -184,7 +177,7 @@ public class AirlineSystem {
 	}
 
 	public static Boolean makeBookings(String u_name, String email, String flightno, Float u_price, 
-			String u_fare, String u_depDate) throws SQLException {
+			String u_fare, String u_depDate, String u_seat) throws SQLException {
 
 		// should we do all conversions in the system? ie pass all values into this method as strings?
 		String bookingsQ = 
@@ -197,7 +190,6 @@ public class AirlineSystem {
 		ResultSet bookings_rs = stmt.executeQuery(bookingsQ);
 		ResultSet tickets_rs = stmt.executeQuery(ticketsQ);
 		int tno = generateTix();
-		String seat = generateSeat();
 		m_con.setAutoCommit(false);	// start transaction block
 		tickets_rs.moveToInsertRow();
 		tickets_rs.updateInt("tno", tno);
@@ -208,9 +200,9 @@ public class AirlineSystem {
 		bookings_rs.updateString("flightno", flightno);
 		bookings_rs.updateString("fare", u_fare);
 		bookings_rs.updateDate("dep_date", Date.valueOf(u_depDate));
-		bookings_rs.updateString("seat", seat); //TODO:
+		bookings_rs.updateString("seat", u_seat); 
 
-		if(checkBooking(tno, seat)) {
+		if(checkBooking(tno, u_seat)) {
 			tickets_rs.insertRow();
 			bookings_rs.insertRow();
 			m_con.commit();
@@ -218,7 +210,7 @@ public class AirlineSystem {
 			//TODO: confirmation message in the GUI
 			return true;
 		} else {
-			//TODO: 
+			//TODO: make sure this works
 			m_con.setAutoCommit(true);
 			// return whether the booking failed, what we do hereafter depends on design choice
 			return false;
@@ -229,9 +221,9 @@ public class AirlineSystem {
 		String bookingInfoQ = "select b.tno, t.name, b.dep_date, t.paid_price "+
 				"from bookings b, tickets t "+
 				"where b.tno=t.tno "+
-				"and t.email = '"+user.getEmail()+"'";
+				"and t.email='"+user.getEmail()+"'";
 		ResultSet rs = stmt.executeQuery(bookingInfoQ);
-		// TODO: print out in the GUI
+		// return resultset to display on gui
 		return rs;
 	}
 
@@ -240,6 +232,7 @@ public class AirlineSystem {
 				"from bookings b, tickets t, ";// TODO: display more information, design choice
 
 		ResultSet rs = stmt.executeQuery(detailQ);
+		// return resultset to display on gui
 		return rs;
 	}
 
