@@ -187,7 +187,7 @@ public class UserScreen{
 //		}
 	}
 	private void getFlights(){
-		String date = yearbox.getSelectedItem()+"-"+(monthbox.getSelectedIndex()+1)+"-"+datebox.getSelectedItem();
+		String date = datebox.getSelectedItem()+"-"+(monthbox.getSelectedIndex()+1)+"-"+yearbox.getSelectedItem();
 		System.out.println(date);
 		try{
 			results = AirlineSystem.searchFlightsStandard(src.getText(),dest.getText(),date);

@@ -97,7 +97,7 @@ public class AirlineSystem {
 		String viewFlightsQ = "select src, dst, dep_date, flightno1, flightno2, flightno3, layover, layover2, price, stops, seats, dep_time, arr_time "+
 				"from (select src, dst, dep_date, flightno1, flightno2, '' flightno3, layover, 0 layover2, price, 1 stops, seats, dep_time, arr_time "+
 				"from good_connections "+
-				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char(dep_date,'DD-MON-YYYY')='"+u_depDate+"' "+
+				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char(dep_date,'DD-MM-YYYY')='"+u_depDate+"' "+
 				"union "+
 				"select src, dst, dep_date, flightno flightno1, '' flightno2, '' flightno3, 0 layover, 0 layover2, price, 0 stops, seats, dep_time, arr_time "+
 				"from available_flights "+
