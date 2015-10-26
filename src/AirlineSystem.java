@@ -81,11 +81,11 @@ public class AirlineSystem {
 		String viewFlightsQ = "select src, dst, dep_date, flightno1, flightno2, layover, price, stops, seats, dep_time, arr_time "+
 				"from (select src, dst, dep_date, flightno1, flightno2, layover, price, 1 stops, seats, dep_time, arr_time "+
 				"from good_connections "+
-				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char("+u_depDate+",'DD/MM/YYYY')='15/10/2015' "+
+				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char( '"+u_depDate+"','DD/MM/YYYY')='15/10/2015' "+
 				"union "+
 				"select src, dst, dep_date, flightno flightno1, '' flightno2, 0 layover, price, 0 stops, seats, dep_time, arr_time "+
 				"from available_flights "+
-				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char("+u_depDate+",'DD/MM/YYYY')='15/10/2015') "+
+				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char('"+u_depDate+"','DD/MM/YYYY')='15/10/2015') "+
 				"order by price asc";
 		ResultSet rs = stmt.executeQuery(viewFlightsQ);
 		//return result set to display on gui
@@ -97,48 +97,31 @@ public class AirlineSystem {
 		String viewFlightsQ = "select src, dst, dep_date, flightno1, flightno2, flightno3, layover, layover2, price, stops, seats, dep_time, arr_time "+
 				"from (select src, dst, dep_date, flightno1, flightno2, '' flightno3, layover, 0 layover2, price, 1 stops, seats, dep_time, arr_time "+
 				"from good_connections "+
-				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char("+u_depDate+",'DD/MM/YYYY')='15/10/2015' "+
+				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char('"+u_depDate+"','DD/MM/YYYY')='15/10/2015' "+
 				"union "+
 				"select src, dst, dep_date, flightno flightno1, '' flightno2, '' flightno3, 0 layover, 0 layover2, price, 0 stops, seats, dep_time, arr_time "+
 				"from available_flights "+
-				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char("+u_depDate+",'DD/MM/YYYY')='15/10/2015' "+
+				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char('"+u_depDate+"','DD/MM/YYYY')='15/10/2015' "+
 				"union "+
 				"select src, dst, dep_date, flightno1, flightno2, flightno3, layover, layover2, price, 2 stops, seats, dep_time, arr_time "+
 				"from good_connections2 "+
-				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char("+u_depDate+",'DD/MM/YYYY')='15/10/2015') "+
+				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char('"+u_depDate+"','DD/MM/YYYY')='15/10/2015') "+
 				"order by stops asc, price asc";
 		ResultSet rs = stmt.executeQuery(viewFlightsQ);
 		return rs;
 	}
-	public static boolean checkPassengers(String u_name) throws SQLException {
-		String psgTable = 
-				"select name, email, country "+
-						"from passengers "+
-						"where name= '"+u_name+"'";
-		ResultSet p_rs = stmt.executeQuery(psgTable);
 
-		// Look for passenger's name in passengers table
-		return p_rs.next();
-
-	}
 	public void updatePassengers(String u_name, String u_country) throws SQLException{
 		// check name in passenger table
-
 		String psgTable = 
 				"select name, email, country "+
 						"from passengers "+
-						"where name= '"+u_name+"' ";
+						"where name= '"+u_name+"' "+
+						"and email='"+user.getEmail()+"'";
 		ResultSet p_rs = stmt.executeQuery(psgTable);
 
 		// Look for passenger's name in passengers table. Add if not exist
-		boolean nameFound = false;
-		while (p_rs.next()) {
-			if (p_rs.getString("name").matches(u_name)) {
-				nameFound = true;
-				break;
-			}
-		}
-		if (!nameFound) {
+		if (!p_rs.next()) {
 			p_rs.moveToInsertRow();
 			p_rs.updateString("name",u_name);
 			p_rs.updateString("email", user.getEmail());
@@ -163,7 +146,6 @@ public class AirlineSystem {
 		while (tixList.contains(n)) {
 			n = rn.nextInt();
 		}
-		rs.close();
 		return n;
 	}
 	private static String generateSeat() throws SQLException{
@@ -177,10 +159,9 @@ public class AirlineSystem {
 		ResultSet rs = stmt.executeQuery(seatsQ);
 		// regenerate and requery db if seat already exists
 		while (rs.next()) {
-			n = String.valueOf(rn.nextInt()) + (char)((rn.nextInt(5) + 'A'));;
+			n = String.valueOf(rn.nextInt(999)) + (char)((rn.nextInt(5) + 'A'));;
 			rs = stmt.executeQuery(seatsQ);
 		}
-		rs.close();
 		return n;
 
 	}
