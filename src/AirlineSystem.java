@@ -130,7 +130,6 @@ public class AirlineSystem {
 		}
 	}
 	private static int generateTix() throws SQLException {
-		List<Integer> tixList = new ArrayList<Integer>();
 		Random rn = new Random();
 		int n = rn.nextInt();
 		String ticketNumsQ = 
@@ -146,9 +145,8 @@ public class AirlineSystem {
 		return n;
 	}
 	private static String generateSeat() throws SQLException{
-		List<String> seatList = new ArrayList<String>();
 		Random rn = new Random();
-		String n = String.valueOf(rn.nextInt(999)) + (char)((rn.nextInt(5) + 'A'));
+		String n = String.valueOf(rn.nextInt(99)) + (char)((rn.nextInt(6) + 'A'));
 		String seatsQ = 
 				"select seat "+
 						"from bookings "+
@@ -156,7 +154,7 @@ public class AirlineSystem {
 		ResultSet rs = stmt.executeQuery(seatsQ);
 		// regenerate and requery db if seat already exists
 		while (rs.next()) {
-			n = String.valueOf(rn.nextInt(999)) + (char)((rn.nextInt(5) + 'A'));;
+			n = String.valueOf(rn.nextInt(99)) + (char)((rn.nextInt(6) + 'A'));;
 			rs = stmt.executeQuery(seatsQ);
 		}
 		return n;
@@ -236,12 +234,11 @@ public class AirlineSystem {
 				"delete from bookings "+
 						"where flightno= '"+u_flightno+"'"+
 						" and dep_date="+u_dep_date+
-						" and seat= '"+u_seat+"'"+
 						" and tno="+u_tno;
 		String ticketsQ = 
 				"delete from tickets "+
-						"where tno="+u_tno+
-						" and email='"+user.getEmail();
+						"where tno="+u_tno;
+
 		stmt.executeUpdate(bookingsQ);
 	}
 
