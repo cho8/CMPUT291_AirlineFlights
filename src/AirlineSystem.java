@@ -79,6 +79,8 @@ public class AirlineSystem {
 						"from available_flights "+
 						"where src='YEG' and dst='LAX' and to_char(dep_date,'DD/MM/YYYY')='15/10/2015') "+
 						"order by price asc";
+		stmt.executeUpdate("drop view available_flights");
+		stmt.executeUpdate("drop view good_connections");
 		stmt.executeUpdate(searchAvailable);
 		stmt.executeUpdate(goodConnect);
 		ResultSet rs = stmt.executeQuery(viewFlightsQ);
