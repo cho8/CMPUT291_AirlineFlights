@@ -17,7 +17,7 @@ public class UserScreen{
 	//Month strings for drop-down menu.
 	private static final String[] months = {"January","February","March","April",
 			"May","June","July","August","September","October","November","December"};
-	
+
 	private UserLoginScreen lscreen;
 	private JComboBox<String> monthbox;
 	private JComboBox<Integer> datebox;
@@ -41,7 +41,7 @@ public class UserScreen{
 	private JLabel passengerlab;
 	private JLabel countrylab;
 	private ResultSet results;
-	
+
 	public UserScreen(){
 		src = new JTextField(TEXT_FIELD_SIZE);
 		dest = new JTextField(TEXT_FIELD_SIZE);
@@ -69,20 +69,20 @@ public class UserScreen{
 		monthbox = new JComboBox<String>(months);
 		datebox = new JComboBox<Integer>(s);
 		yearbox = new JComboBox<Integer>(y);
-		
+
 		leftp.setLayout(new GridLayout(10,1));
 		rightp.setLayout(new GridLayout(10,1));
 		centrep.setLayout(new GridLayout(1,1));
 
 	}
-	
+
 	public void init(){
 		Main.frame.setSize(APPLICATION_WIDTH+20, APPLICATION_HEIGHT+40);//I have to add to the dimensions here for some reason to get it to display properly.
 		centrep.setPreferredSize(new Dimension(APPLICATION_WIDTH/2,APPLICATION_HEIGHT));
 		leftp.setPreferredSize(new Dimension(APPLICATION_WIDTH/4,APPLICATION_HEIGHT));
 		rightp.setPreferredSize(new Dimension(APPLICATION_WIDTH/4,APPLICATION_HEIGHT));
 		Main.mainpanel.setLayout(new FlowLayout());
-		
+
 		leftp.add(new JLabel("Source"));
 		leftp.add(src);
 		leftp.add(new JLabel("Destination"));
@@ -95,7 +95,7 @@ public class UserScreen{
 		leftp.add(logout);
 
 		centrep.add(scrollPane);
-		
+
 		rightp.add(create);
 		rightp.add(passengerlab);
 		rightp.add(passenger);
@@ -103,13 +103,13 @@ public class UserScreen{
 		rightp.add(country);
 		passengerlab.setVisible(false);
 		countrylab.setVisible(false);
-	 	passenger.setVisible(false);
+		passenger.setVisible(false);
 		country.setVisible(false);
 		rightp.add(existing);
 		rightp.add(deletebooking);
 		deletebooking.setVisible(false);
 		rightp.add(clear);
-		
+
 		addListeners();
 		Main.mainpanel.add(leftp);
 		Main.mainpanel.add(centrep);
@@ -117,104 +117,113 @@ public class UserScreen{
 		Main.frame.validate();
 		Main.frame.repaint();
 	}
-	
+
 	public void clear(){
 		Main.mainpanel.removeAll();
 
 	}
-	
+
 	private void addListeners(){
 		searchf.addActionListener(new ActionListener(){
-			 public void actionPerformed(ActionEvent e){
+			public void actionPerformed(ActionEvent e){
 				deletebooking.setVisible(false);
-				 getFlights();
-				 displayFlights();
-			 }
+				create.setVisible(true);
+				getFlights();
+				displayFlights();
+			}
 		});
 		logout.addActionListener(new ActionListener(){
-			 public void actionPerformed(ActionEvent e){
-				 try{
-					 Main.currentuser.setLastLogin();
-				 }catch(SQLException err){
-					 System.out.println("Cannot logout...you're stuck here forever. "
-							 + err.getMessage());
-				 }
-				 clear();
-				 lscreen = new UserLoginScreen();
-				 lscreen.init();
-			 }
+			public void actionPerformed(ActionEvent e){
+				try{
+					Main.currentuser.setLastLogin();
+				}catch(SQLException err){
+					System.out.println("Cannot logout...you're stuck here forever. "
+							+ err.getMessage());
+				}
+				clear();
+				lscreen = new UserLoginScreen();
+				lscreen.init();
+			}
 		});
 		create.addActionListener(new ActionListener(){
-			 public void actionPerformed(ActionEvent e){
-					if(create.getText() == "Create Booking"){
-						deletebooking.setVisible(false);
-						passengerlab.setVisible(true);
-						countrylab.setVisible(true);
-						passenger.setVisible(true);
-						country.setVisible(true);
-						create.setText("Confirm Booking");
-					} else {
-						create.setText("Create Booking");
-						createBooking();
-					}
+			public void actionPerformed(ActionEvent e){
+				if(create.getText() == "Create Booking"){
+					deletebooking.setVisible(false);
+					passengerlab.setVisible(true);
+					countrylab.setVisible(true);
+					passenger.setVisible(true);
+					country.setVisible(true);
+					create.setText("Confirm Booking");
+				} else {
+					create.setText("Create Booking");
+					createBooking();
+				}
 
-				 System.out.println(myList.getSelectedValue());
-			 }
+				System.out.println(myList.getSelectedValue());
+			}
 		});
 		existing.addActionListener(new ActionListener(){
-			 public void actionPerformed(ActionEvent e){
-				 	model.clear();
-					passengerlab.setVisible(false);
-					countrylab.setVisible(false);
-				 	passenger.setVisible(false);
-					country.setVisible(false);
-					deletebooking.setVisible(true);
-				 System.out.println("Existing");
-			 }
+			public void actionPerformed(ActionEvent e){
+				model.clear();
+				passengerlab.setVisible(false);
+				countrylab.setVisible(false);
+				passenger.setVisible(false);
+				country.setVisible(false);
+				create.setVisible(false);
+				deletebooking.setVisible(true);
+				displayBookings();
+				System.out.println("Existing");
+			}
 		});
 		clear.addActionListener(new ActionListener(){
-			 public void actionPerformed(ActionEvent e){
-				 model.clear();
-			 }
+			public void actionPerformed(ActionEvent e){
+				model.clear();
+			}
 		});
 	}
-	
+
 	private void createBooking(){
-//		try{
-//			
-//		}catch(SQLException e){
-//			
-//		}
+		try{
+		getFlights();
+		results.absolute(myList.getSelectedIndex()+1);
+		AirlineSystem.makeBookings(passenger.getText(),Main.currentuser.getEmail(),
+				results.getString("flightno1"),results.getFloat("price"),
+				"Y",results.getDate("dep_date").toString(),"1a"); 
+		AirlineSystem.makeBookings(passenger.getText(),Main.currentuser.getEmail(),
+				results.getString("flightno2"),results.getFloat("price"),
+				"Y",results.getDate("dep_date").toString(),"1a");
+		}catch(SQLException e){
+			System.out.println("createBooking: " + e.getMessage());
+		}
+
 	}
 	private void getFlights(){
 		String date = datebox.getSelectedItem()+"-"+(monthbox.getSelectedIndex()+1)+"-"+yearbox.getSelectedItem();
-		System.out.println(date);
-		try{
-			results = AirlineSystem.searchFlightsStandard(src.getText(),dest.getText(),date,"price DESC");
-		}catch(SQLException e){
-			System.out.println("Can't Find Flights " + e.getMessage());
-		}
-		
+		System.out.println(date+" "+src.getText()+" "+dest.getText());
+
+		results = AirlineSystem.searchFlightsStandard(src.getText(),dest.getText(),date,"price DESC");
+
+
 	}
-	
+
 	private void displayBookings(){
 		model.clear();
 		try{
-		ResultSet bookings = AirlineSystem.listBookings();
-		
-		while(bookings.next()){
-			String booking = "Ticket: " + bookings.getString("tno") 
+			ResultSet bookings = AirlineSystem.listBookings();
+
+			while(bookings.next()){
+				String booking = "Ticket: " + bookings.getString("tno") 
 				+ ", Name: " + bookings.getString("name")
 				+ ", Departure Date: " + bookings.getDate("dep_date").toString()
 				+ ", Paid Price: " + bookings.getFloat("paid_price");
-			model.addElement(booking);
-		}
+				model.addElement(booking);
+			}
 		}catch(SQLException e){
 			System.out.println("Can't Fetch Bookings " + e.getMessage());
 		}
-		
+
 	}
-	
+
 	private void displayDetailBooking(){
 		//More Details about booking.
 	}
@@ -224,45 +233,45 @@ public class UserScreen{
 	private void displayFlights(){
 		model.clear();
 		boolean areflights = false;
-		
+
 		try{
-		String flight1 = "Flight 1: " + results.getString("flightno1") +", ";
-		String flight2 = "Flight 2: " + results.getString("flightno2") + ", ";
-		String flight3;
-		if(multipleConnections()){
-			flight3 = "Flight 3: " + results.getString("flightno3") + ", ";
-		}else{
-			flight3 = "";
-		}
-		
-		while(results.next()){
-			areflights = true;
-			Integer stops = results.getInt("stops");
-			String layover;
-			if(stops == 0){
-				layover = "";
-			}else{
-				layover = "Layover Time: "  
-						+ String.valueOf(results.getFloat("layover")) + ", ";
+
+			while(results.next()){
+				String flight1 = "Flight 1: " + results.getString("flightno1")+", ";
+				String flight2 = "Flight 2: " + results.getString("flightno2") + ", ";
+				String flight3;
+				if(multipleConnections()){
+					flight3 = "Flight 3: " + results.getString("flightno3") + ", ";
+				}else{
+					flight3 = "";
+				}
+				areflights = true;
+				Integer stops = results.getInt("stops");
+				String layover;
+				if(stops == 0){
+					layover = "";
+				}else{
+					layover = "Layover Time: "  
+							+ String.valueOf(results.getFloat("layover")) + ", ";
+				}
+				String resultitem = "Source: " + results.getString("src")
+				+", Destination: "+ results.getString("dst") + ", "
+				+ flight1 + flight2 + flight3
+				+ "Stops: " + stops + ", " + layover + "Price: " 
+				+ results.getFloat("price") + ", Departure Time: "
+				+ results.getDate("dep_time").toString() + ", Arrival Time: "
+				+ results.getDate("arr_time").toString() + ", Available Seats: "
+				+ results.getInt("seats");
+				model.addElement(resultitem);
 			}
-			String resultitem = "Source: " + results.getString("src")
-					+", Destination: "+ results.getString("dest") + ", "
-					+ flight1 + flight2 + flight3
-					+ "Stops: " + stops + ", " + layover + "Price: " 
-					+ results.getFloat("price") + ", Departure Time: "
-					+ results.getDate("dep_time").toString() + ", Arrival Time: "
-					+ results.getDate("arr_time").toString() + ", Available Seats: "
-					+ results.getInt("seats");
-			model.addElement(resultitem);
-		}
 		} catch(SQLException e){
-			System.out.println("Can't get Flights");
+			System.out.println("Can't get Flight" + e.getMessage());
 		}
-		
+
 		if (!areflights){
 			model.addElement("No Available Flights");
 		}
 	}
-	
+
 
 }
