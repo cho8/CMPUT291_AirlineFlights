@@ -10,11 +10,7 @@ public class AirlineSystem {
 
 	static User user;
 
-
-
-
 	public void makeConnection(String m_userName, String m_password){
-
 		try {
 			Class drvClass = Class.forName(m_driverName); 
 			// DriverManager.registerDriver((Driver)drvClass.newInstance());- not needed. 
@@ -27,21 +23,16 @@ public class AirlineSystem {
 		try{
 			// Establish a connection
 			m_con = DriverManager.getConnection(m_url, m_userName,
-					m_password);
+					m_password);			
+			stmt = m_con.createStatement(
+					ResultSet.TYPE_SCROLL_SENSITIVE, 
+					ResultSet.CONCUR_UPDATABLE);
 			// Changed to reflect changes made in the result set and to make these changes permanent to the database too
-
 		}  catch(SQLException ex) {
 			System.err.println("SQLException: " +
 					ex.getMessage());
 		}
 
-		try {
-			stmt = m_con.createStatement(
-					ResultSet.TYPE_SCROLL_SENSITIVE, 
-					ResultSet.CONCUR_UPDATABLE);
-		} catch(SQLException er) {
-			System.err.println("SecondException: "+ er.getMessage());
-		}
 	}
 
 	public void stopConnection() throws SQLException {
@@ -236,9 +227,9 @@ public class AirlineSystem {
 	}
 	public static ResultSet listBookings() throws SQLException {
 		String bookingInfoQ = "select b.tno, t.name, b.dep_date, t.paid_price "+
-						"from bookings b, tickets t "+
-						"where b.tno=t.tno "+
-						"and t.email = '"+user.getEmail()+"'";
+				"from bookings b, tickets t "+
+				"where b.tno=t.tno "+
+				"and t.email = '"+user.getEmail()+"'";
 		ResultSet rs = stmt.executeQuery(bookingInfoQ);
 		// TODO: print out in the GUI
 		return rs;
@@ -254,11 +245,11 @@ public class AirlineSystem {
 
 	public static void cancelBooking(int u_tno, String u_flightno, String u_dep_date, String u_seat) throws SQLException {
 		String bookingsQ = "delete from bookings "+
-						"where flightno= '"+u_flightno+"'"+
-						" and dep_date="+u_dep_date+
-						" and tno="+u_tno;
+				"where flightno= '"+u_flightno+"'"+
+				" and dep_date="+u_dep_date+
+				" and tno="+u_tno;
 		String ticketsQ = "delete from tickets "+
-						"where tno="+u_tno;
+				"where tno="+u_tno;
 
 		stmt.executeUpdate(bookingsQ);
 		stmt.executeUpdate(ticketsQ);
