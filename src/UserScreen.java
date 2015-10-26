@@ -190,7 +190,7 @@ public class UserScreen{
 		String date = datebox.getSelectedItem()+"-"+(monthbox.getSelectedIndex()+1)+"-"+yearbox.getSelectedItem();
 		System.out.println(date);
 		try{
-			results = AirlineSystem.searchFlightsStandard(src.getText(),dest.getText(),date);
+			results = AirlineSystem.searchFlightsStandard(src.getText(),dest.getText(),date,"price DESC");
 		}catch(SQLException e){
 			System.out.println("Can't Find Flights " + e.getMessage());
 		}

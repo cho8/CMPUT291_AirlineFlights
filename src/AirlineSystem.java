@@ -41,6 +41,13 @@ public class AirlineSystem {
 	}
 
 	private static void flightsQuery(String u_src, String u_dst, String u_depDate) throws SQLException {
+		
+	}
+
+
+	public static ResultSet searchFlightsStandard(String u_src, String u_dst, String u_depDate, String orderBy) throws SQLException{
+
+//		flightsQuery(u_src, u_dst, u_depDate);
 		String searchAvailable = "create view available_flights(flightno,dep_date, src,dst,dep_time,arr_time,fare,seats, "+
 				"price) as "+
 				"select f.flightno, sf.dep_date, f.src, f.dst, f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time)), "+
@@ -54,14 +61,8 @@ public class AirlineSystem {
 				"a1.tzone, fa.fare, fa.limit, fa.price "+
 				"having fa.limit-count(tno) > 0";
 
-		stmt.executeUpdate("drop view available_flights");
+		//stmt.executeUpdate("drop view available_flights");
 		stmt.executeUpdate(searchAvailable);
-	}
-
-
-	public static ResultSet searchFlightsStandard(String u_src, String u_dst, String u_depDate, String orderBy) throws SQLException{
-		
-		flightsQuery(u_src, u_dst, u_depDate);
 		String goodConnect = "create view good_connections (src,dst,dep_date,flightno1,flightno2, layover,price, seats, dep_time, arr_time, stops) as "+
 				"select a1.src, a2.dst, a1.dep_date, a1.flightno, a2.flightno, " +
 				"(a2.dep_time-a1.arr_time)*24, a1.price+a2.price, case when a1.seats <= a2.seats then a1.seats else a2.seats end, a1.dep_time, a2.arr_time, 1 stops "+
@@ -81,6 +82,7 @@ public class AirlineSystem {
 
 		stmt.executeUpdate("drop view good_connections");
 		stmt.executeUpdate(goodConnect);
+
 		ResultSet rs = stmt.executeQuery(viewFlightsQ);
 		//return resultset to display on gui
 		return rs;
