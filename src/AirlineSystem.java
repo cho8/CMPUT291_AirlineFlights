@@ -139,19 +139,16 @@ public class AirlineSystem {
 						"where tno= '"+n+"'";
 		ResultSet rs = stmt.executeQuery(ticketNumsQ);
 		while (rs.next()) {
-			tixList.add(rs.getInt("tno"));
+			n = rn.nextInt();
 			rs = stmt.executeQuery(ticketNumsQ);
 		}
 		// regenerate and requery db if tno already exists
-		while (tixList.contains(n)) {
-			n = rn.nextInt();
-		}
 		return n;
 	}
 	private static String generateSeat() throws SQLException{
 		List<String> seatList = new ArrayList<String>();
 		Random rn = new Random();
-		String n = String.valueOf(rn.nextInt()) + (char)((rn.nextInt(5) + 'A'));
+		String n = String.valueOf(rn.nextInt(999)) + (char)((rn.nextInt(5) + 'A'));
 		String seatsQ = 
 				"select seat "+
 						"from bookings "+
@@ -165,7 +162,6 @@ public class AirlineSystem {
 		return n;
 
 	}
-
 
 
 	public static String makeBookings(String u_name, String email, String flightno, Float u_price, 
