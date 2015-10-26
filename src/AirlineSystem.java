@@ -49,7 +49,7 @@ public class AirlineSystem {
 		m_con.close();
 	}
 
-	public static ResultSet searchFlightsStandard(String u_src, String u_dst, String u_depDate) throws SQLException{
+	private static void flightsQuery(String u_src, String u_dst, String u_depDate) throws SQLException {
 		String searchAvailable = "create view available_flights(flightno,dep_date, src,dst,dep_time,arr_time,fare,seats, "+
 				"price) as "+
 				"select f.flightno, sf.dep_date, f.src, f.dst, f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time)), "+
@@ -70,21 +70,44 @@ public class AirlineSystem {
 				"where a1.dst=a2.src "+
 				"group by a1.src, a2.dst, a1.dep_date, a1.flightno, a2.flightno, "+
 				"a2.dep_time, a1.arr_time, a1.price+a2.price, a1.seats, a2.seats, a1.dep_time, a2.arr_time";
-		String viewFlightsQ = "select src, dst, dep_date, flightno1, flightno2, layover, price, stops, seats, dep_time, arr_time "+
-						"from (select src, dst, dep_date, flightno1, flightno2, layover, price, 1 stops, seats, dep_time, arr_time "+
-						"from good_connections "+
-						"where src='YEG' and dst='LAX' and to_char(dep_date,'DD/MM/YYYY')='15/10/2015' "+
-						"union "+
-						"select src, dst, dep_date, flightno flightno1, '' flightno2, 0 layover, price, 0 stops, seats, dep_time, arr_time "+
-						"from available_flights "+
-						"where src='YEG' and dst='LAX' and to_char(dep_date,'DD/MM/YYYY')='15/10/2015') "+
-						"order by price asc";
 		stmt.executeUpdate("drop view available_flights");
 		stmt.executeUpdate("drop view good_connections");
 		stmt.executeUpdate(searchAvailable);
 		stmt.executeUpdate(goodConnect);
+	}
+	public static ResultSet searchFlightsStandard(String u_src, String u_dst, String u_depDate) throws SQLException{
+
+		flightsQuery(u_src, u_dst, u_depDate);
+		String viewFlightsQ = "select src, dst, dep_date, flightno1, flightno2, layover, price, stops, seats, dep_time, arr_time "+
+				"from (select src, dst, dep_date, flightno1, flightno2, layover, price, 1 stops, seats, dep_time, arr_time "+
+				"from good_connections "+
+				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char("+u_depDate+",'DD/MM/YYYY')='15/10/2015' "+
+				"union "+
+				"select src, dst, dep_date, flightno flightno1, '' flightno2, 0 layover, price, 0 stops, seats, dep_time, arr_time "+
+				"from available_flights "+
+				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char("+u_depDate+",'DD/MM/YYYY')='15/10/2015') "+
+				"order by price asc";
 		ResultSet rs = stmt.executeQuery(viewFlightsQ);
 		//return result set to display on gui
+		return rs;
+	}
+
+	public static ResultSet searchFlightsThreeFlights(String u_src, String u_dst, String u_depDate) throws SQLException{
+		flightsQuery(u_src, u_dst, u_depDate);
+		String viewFlightsQ = "select src, dst, dep_date, flightno1, flightno2, flightno3, layover, layover2, price, stops, seats, dep_time, arr_time "+
+				"from (select src, dst, dep_date, flightno1, flightno2, '' flightno3, layover, 0 layover2, price, 1 stops, seats, dep_time, arr_time "+
+				"from good_connections "+
+				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char("+u_depDate+",'DD/MM/YYYY')='15/10/2015' "+
+				"union "+
+				"select src, dst, dep_date, flightno flightno1, '' flightno2, '' flightno3, 0 layover, 0 layover2, price, 0 stops, seats, dep_time, arr_time "+
+				"from available_flights "+
+				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char("+u_depDate+",'DD/MM/YYYY')='15/10/2015' "+
+				"union "+
+				"select src, dst, dep_date, flightno1, flightno2, flightno3, layover, layover2, price, 2 stops, seats, dep_time, arr_time "+
+				"from good_connections2 "+
+				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char("+u_depDate+",'DD/MM/YYYY')='15/10/2015') "+
+				"order by stops asc, price asc";
+		ResultSet rs = stmt.executeQuery(viewFlightsQ);
 		return rs;
 	}
 	public static boolean checkPassengers(String u_name) throws SQLException {
