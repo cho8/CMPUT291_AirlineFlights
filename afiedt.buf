@@ -1,2 +1,2 @@
-select to_char(act_dep_time, 'hh24:mi'), to_char(act_arr_time, 'hh24:mi') from sch_flights where flightno='AC014'
+select * from threeflights where to_char(dep_date, 'dd-mm-yyyy')='01-01-2014'
 /

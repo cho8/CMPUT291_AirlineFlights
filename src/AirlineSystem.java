@@ -36,19 +36,46 @@ public class AirlineSystem {
 		m_con.close();
 	}
 
-	private static String citySearch(String city) throws SQLException{
+	public static ResultSet searchCity(String city){
+		// returns a resultset to be selected by the user;
 		//TODO: To be implemented in UserScreen
-		if (city.length() == 3) {
-			// airport code
-			return city.toUpperCase();
-		} else {
-			String airportsQ = "select distinct acode from airports where lower(city) ='%"+city+"%'";
-			ResultSet rs = stmt.executeQuery(airportsQ);
+		try {
+			// first check if airport acode
+			String acodeQ = "select acode from airports where lower(acode) ='"+city+"'";
+			ResultSet rs = stmt.executeQuery(acodeQ);
 			if (rs.next())
-				return rs.getString("acode").toUpperCase();
-			else
-				return null;
+				return rs;
+
+			// otherwise check for city name
+			String cityQ = "select acode from airports where lower(city) like '%"+city+"%'";
+			rs = stmt.executeQuery(cityQ);
+			if (rs.next())
+				return rs;
+
+		} catch(SQLException e) {
+			System.err.println("SQLException searchCity: "+e.getMessage());
 		}
+		return null;
+	}
+
+	public static String getAcode(String city) {
+		try {
+			// first check if airport acode
+			String acodeQ = "select distinct acode from airports where lower(acode) ='"+city+"'";
+			ResultSet rs = stmt.executeQuery(acodeQ);
+			if (rs.next())
+				return rs.getString("acode");
+
+			// otherwise check for city name
+			String cityQ = "select distinct acode from airports where lower(city) like '%"+city+"%'";
+			rs = stmt.executeQuery(cityQ);
+			if (rs.next())
+				return rs.getString("acode");
+
+		} catch(SQLException e) {
+			System.err.println("SQLException getAcode: "+e.getMessage());
+		}
+		return null;
 	}
 
 	private static void createViews() {
@@ -110,41 +137,72 @@ public class AirlineSystem {
 			System.err.println("SQLException good_connection :" + g.getMessage());
 		}
 	}
-	public static ResultSet searchFlightsStandard(String u_src, String u_dst, String u_depDate, String orderBy){
-
-		createViews();
-		String twoFlightsView = "create view twoflights as ("+
-				"select src, dst, dep_date, flightno1, flightno2, layover, price, stops, seats, dep_time, arr_time, dep_date2, fare, fare2 "+
-				"from (select gf.src, gf.dst, gf.dep_date, gf.flightno1, gf.flightno2, gf.layover, gf.price, 1 stops, gf.seats, gf.dep_time, "+
-				"gf.arr_time, gf.dep_date2, gf.fare, gf.fare2 "+
-				"from good_connections_full gf, good_connections g "+
-				"where gf.flightno1 = g.flightno1 and gf.flightno2 = g.flightno2 and gf.dep_date = g.dep_date and gf.price = g.price "+
-				"union "+
-				"select af.src, af.dst, af.dep_date, af.flightno flightno1, '' flightno2, 0 layover, af.price, 0 stops, af.seats, af.dep_time, af.arr_time, null dep_date2, af.fare, '' fare2 "+
-				"from available_flights a, available_flights_full af "+
-				"where af.flightno = a.flightno and af.dep_date = a.dep_date and af.price = a.price))";
-		String twoFlightsQ = "select * from twoflights "+
-				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char(dep_date,'DD-MM-YYYY')='"+u_depDate+"' "+
-				"order by "+orderBy; //price asc or stops asc
-
-
-		ResultSet rs = null;
+	private static void createViews2() {
+		String searchAvailable = "create view available_flights(flightno,dep_date, src,dst,dep_time,arr_time, price) as "+
+				"select flightno, dep_date, src, dst, dep_time, arr_time, min(price) from (select f.flightno, sf.dep_date, f.src, f.dst, f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time)) dep_time, "+ 
+				"(f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time))+(f.est_dur/60+a2.tzone-a1.tzone)/24) arr_time, "+
+				"fa.limit-count(tno) seats, fa.price "+
+				"from flights f, flight_fares fa, sch_flights sf, bookings b, airports a1, airports a2 "+
+				"where f.flightno=sf.flightno and f.flightno=fa.flightno and f.src=a1.acode and "+
+				"f.dst=a2.acode and fa.flightno=b.flightno(+) and fa.fare=b.fare(+) and "+
+				"sf.dep_date=b.dep_date(+) "+
+				"group by f.flightno, sf.dep_date, f.src, f.dst, f.dep_time, f.est_dur,a2.tzone, "+
+				"a1.tzone, fa.limit, fa.price "+
+				"having fa.limit-count(tno) > 0) "+
+				"group by flightno, dep_date, src, dst, dep_time, arr_time";
+		String searchAvailableFull = "create view available_flights_full(flightno,dep_date, src,dst,dep_time,arr_time,fare,seats, "+
+				"price) as "+
+				"select f.flightno, sf.dep_date, f.src, f.dst, f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time)), "+
+				"f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time))+(f.est_dur/60+a2.tzone-a1.tzone)/24, "+
+				"fa.fare, fa.limit-count(tno), fa.price "+
+				"from flights f, flight_fares fa, sch_flights sf, bookings b, airports a1, airports a2 "+
+				"where f.flightno=sf.flightno and f.flightno=fa.flightno and f.src=a1.acode and "+
+				"f.dst=a2.acode and fa.flightno=b.flightno(+) and fa.fare=b.fare(+) and "+
+				"sf.dep_date=b.dep_date(+) "+
+				"group by f.flightno, sf.dep_date, f.src, f.dst, f.dep_time, f.est_dur,a2.tzone, "+
+				"a1.tzone, fa.fare, fa.limit, fa.price "+
+				"having fa.limit-count(tno) > 0";
+		String goodConnect2 = "create view good_connections2 (src, dst, dep_date, flightno1, flightno2, flightno3, layover, layover2, price, dep_time, arr_time, stops, dep_date2, dep_date3) as "+
+				"select a1.src, a3.dst, a1.dep_date, a1.flightno, a2.flightno, a3.flightno, a2.dep_time-a1.arr_time, a3.dep_time-a2.arr_time , "+
+				"min(a1.price+a2.price+a3.price), a1.dep_time, a3.arr_time, 2 stops, a2.dep_date as dep_date2, a3.dep_date as dep_date3 "+
+				"from available_flights_full a1, available_flights_full a2, available_flights_full a3 "+
+				"where a1.dst=a2.src and a2.dst=a3.src "+
+				"group by a1.src, a3.dst, a1.dep_date, a1.flightno, a2.flightno, a3.flightno, a2.dep_time, a1.arr_time, a3.dep_time, a2.arr_time, a1.seats, a2.seats, a3.seats, a1.dep_time, a3.arr_time, a2.dep_date, a3.dep_date";
+		String goodConnect2Full = "create view good_connections2_full (src, dst, dep_date, flightno1, flightno2, flightno3, layover, layover2, price, seats, dep_time, arr_time, stops, dep_date2, dep_date3, fare, fare2, fare3) as "+
+				"select a1.src, a3.dst, a1.dep_date, a1.flightno, a2.flightno, a3.flightno, a2.dep_time-a1.arr_time, a3.dep_time-a2.arr_time , "+
+				"a1.price+a2.price+a3.price, case when a1.seats <= a2.seats and a1.seats <= a3.seats then a1.seats when a2.seats <= a3.seats then a2.seats else a3.seats end, a1.dep_time, a3.arr_time, 2 stops, a2.dep_date dep_date2, a3.dep_date dep_date3, a1.fare, a2.fare fare2, a3.fare fare3 "+
+				"from available_flights_full a1, available_flights_full a2, available_flights_full a3 "+
+				"where a1.dst=a2.src and a2.dst=a3.src "+
+				"group by a1.src, a3.dst, a1.dep_date, a1.flightno, a2.flightno, a3.flightno, a2.dep_time, a1.arr_time, a3.dep_time, a2.arr_time, a1.seats, a2.seats, a3.seats, a1.dep_time, a3.arr_time, a2.dep_date, a3.dep_date, a1.price+a2.price+a3.price, a1.fare, a2.fare, a3.fare";
 		try{
-			stmt.executeUpdate("drop view twoflights");
-			stmt.executeUpdate(twoFlightsView);
-			rs = stmt.executeQuery(twoFlightsQ);
-		}catch(SQLException g){
-			System.err.println("SQLException in searchFlightsStandard :"+g.getMessage());
+			stmt.executeUpdate("drop view available_flights");
+			stmt.executeUpdate("drop view available_flights_full");
+			stmt.executeUpdate("drop view good_connections2");
+			stmt.executeUpdate("drop view good_connections2_full");
+		}catch(SQLException f){
+			System.err.println("SQLException drop views: "+f.getMessage());
 		}
 
-		//return resultset to display on gui
-		return rs;
+		try{
+			stmt.executeUpdate(searchAvailable);
+			stmt.executeUpdate(searchAvailableFull);
+		}catch(SQLException h){
+			System.err.println("SQLException available_flights");
+		}
 
+		try{
+			stmt.executeUpdate(goodConnect2);
+			stmt.executeUpdate(goodConnect2Full);
+		}catch(SQLException g){
+			System.err.println("SQLException good_connection :" + g.getMessage());
+		}
 	}
 
-	public static ResultSet searchFlightsModified(String u_src, String u_dst, String u_depDate, String orderBy) throws SQLException{
+	
 
-		createViews();
+	public static ResultSet searchFlightsModified(String u_src, String u_dst, String u_depDate, String orderBy){
+
+		createViews2();
 		String threeFlightsView = "create view threeflights as ( "+
 				"select src, dst, dep_date, flightno1, flightno2, flightno3, layover, layover2, price, stops, seats, dep_time, arr_time, dep_date2, dep_date3, "+
 				"fare, fare2, fare3 "+
@@ -164,24 +222,25 @@ public class AirlineSystem {
 				"where g2f.flightno1 = g2.flightno1 and g2f.flightno2 = g2.flightno2 and g2f.flightno3 = g2.flightno3 and "+ 
 				"g2f.dep_date = g2.dep_date and g2f.price = g2.price))";
 		String threeFlightsQ = "select * from threeflights "+
-				"where src='YEG' and dst='LAX' and to_char(dep_date,'DD/MM/YYYY')='15/10/2015' "+
-				"order by stops asc, price asc";
+				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char(dep_date,'DD-MM-YYYY')='"+u_depDate+"' and layover2>=0 and layover>=0"+
+				"order by "+orderBy;;
 
 		ResultSet rs = null;
+		try {
+			stmt.executeUpdate("drop view threeflights");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			System.err.println("SQLException in drop Three :"+e.getMessage());
+		}
 		try{
-			stmt.executeUpdate("drop view twoflights");
+
 			stmt.executeUpdate(threeFlightsView);
 			rs = stmt.executeQuery(threeFlightsQ);
 		}catch(SQLException g){
-			System.err.println("SQLException in searchFlightsStandard :"+g.getMessage());
+			System.err.println("SQLException in searchFlightsModified :"+g.getMessage());
 		}
 
 		//return resultset to display on gui
-		return rs;
-	}
-
-	public static ResultSet searchReturnFlight(String u_src, String u_dst, String u_depDate) {
-		ResultSet rs = null; //TODO
 		return rs;
 	}
 

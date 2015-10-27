@@ -294,10 +294,13 @@ public class UserScreen{
 	}
 	private void getFlights(){
 		String date = datebox.getSelectedItem()+"-"+(monthbox.getSelectedIndex()+1)+"-"+yearbox.getSelectedItem();
+		
+		//Added a cityQuery in AirlineSystem that takes in lowercase airport codes and partial city matches
+
+		//TODO: give the user option to pick a matching city
 		System.out.println(date+" "+src.getText()+" "+dest.getText());
-		//TODO: Added a cityQuery in AirlineSystem that takes in lowercase airport codes and partial city matches
 		// pass the result (an airport code) into searchFlightsX
-		results = AirlineSystem.searchFlightsStandard(src.getText(),dest.getText(),date,"price asc");
+		results = AirlineSystem.searchFlightsModified(src.getText(),dest.getText(),date,"price asc");
 		//TODO: change "price asc" to something the user can select
 		//TODO: GUI Option to search for 3 flights;
 
