@@ -1,2 +1,2 @@
-insert into users values ('brad@brad.com','password',null)
+update sch_flights set act_dep_time=to_date('22:10', 'hh24:mm')
 /

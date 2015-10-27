@@ -25,16 +25,25 @@ public class User{
 
 
 		if(rs.next()) {
-			String agentQ = 
-					"select email "+
-							"from airline_agents "+
-							"where email='"+m_email+"'";
-			rs = stmt.executeQuery(agentQ);
-			isAgent = rs.next();
+			isAgent = checkAgent();
 			return true;
 		} else {
 			return false;
 		}
+	}
+	
+	private static boolean checkAgent() throws SQLException {
+		String agentQ = "select * from airline_agents where email='"+Main.currentuser.getEmail()+"'";
+		ResultSet rs = stmt.executeQuery(agentQ);
+		if (rs.next()) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public static boolean isAgent() {
+		return isAgent;
 	}
 
 	public static boolean checkPassword(String m_email, String pw) throws SQLException {
