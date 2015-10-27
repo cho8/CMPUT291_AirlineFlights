@@ -180,6 +180,11 @@ public class UserScreen{
 				model.clear();
 			}
 		});
+		deletebooking.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				cancelBooking();
+			}
+		});
 	}
 
 	private void createBooking(){
@@ -222,6 +227,20 @@ public class UserScreen{
 			System.out.println("Can't Fetch Bookings " + e.getMessage());
 		}
 
+	}
+	
+	private void cancelBooking(){
+		try{
+			ResultSet bookings = AirlineSystem.listBookings();
+
+			bookings.absolute(myList.getSelectedIndex()+1);
+			AirlineSystem.cancelBooking(bookings.getInt("tno"),
+					bookings.getString("flightno"),
+					bookings.getDate("dep_date").toString());
+			model.remove(myList.getSelectedIndex());
+		}catch(SQLException e){
+			System.out.println("cancelbooking: "+e.getMessage());
+		}
 	}
 
 	private void displayDetailBooking(){

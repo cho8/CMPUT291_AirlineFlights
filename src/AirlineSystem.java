@@ -237,7 +237,7 @@ public class AirlineSystem {
 
 	}
 	public static ResultSet listBookings() throws SQLException {
-		String bookingInfoQ = "select b.tno, t.name, b.dep_date, t.paid_price "+
+		String bookingInfoQ = "select b.tno, b.flightno, t.name, b.dep_date, t.paid_price "+
 				"from bookings b, tickets t "+
 				"where b.tno=t.tno "+
 				"and t.email='"+Main.currentuser.getEmail()+"'";
@@ -256,10 +256,10 @@ public class AirlineSystem {
 		return rs;
 	}
 
-	public static void cancelBooking(int u_tno, String u_flightno, String u_dep_date, String u_seat) throws SQLException {
+	public static void cancelBooking(int u_tno, String u_flightno, String u_dep_date) throws SQLException {
 		String bookingsQ = "delete from bookings "+
-				"where flightno= '"+u_flightno+"'"+
-				" and dep_date="+u_dep_date+
+				" where flightno= '"+u_flightno+"'"+
+				" and to_char(dep_date, 'yyyy-mm-dd') = '"+u_dep_date+"'"+
 				" and tno="+u_tno;
 		String ticketsQ = "delete from tickets "+
 				"where tno="+u_tno;
