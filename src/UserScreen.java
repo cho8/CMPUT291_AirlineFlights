@@ -159,7 +159,7 @@ public class UserScreen{
 					createBooking();
 				}
 
-				System.out.println(myList.getSelectedValue());
+//				System.out.println(myList.getSelectedValue());
 			}
 		});
 		existing.addActionListener(new ActionListener(){
@@ -187,11 +187,11 @@ public class UserScreen{
 		getFlights();
 		results.absolute(myList.getSelectedIndex()+1);
 		AirlineSystem.makeBookings(passenger.getText(),Main.currentuser.getEmail(),
-				results.getString("flightno1"),results.getFloat("price"),
-				"Y",results.getDate("dep_date").toString(),"1a"); 
-		AirlineSystem.makeBookings(passenger.getText(),Main.currentuser.getEmail(),
-				results.getString("flightno2"),results.getFloat("price"),
-				"Y",results.getDate("dep_date").toString(),"1a");
+				results.getString("flightno1").trim(),results.getFloat("price"),
+				results.getDate("dep_date").toString(),"",country.getText()); 
+//		AirlineSystem.makeBookings(passenger.getText(),Main.currentuser.getEmail(),
+//				results.getString("flightno2").trim(),results.getFloat("price"),
+//				results.getDate("dep_date").toString(),"null");
 		}catch(SQLException e){
 			System.out.println("createBooking: " + e.getMessage());
 		}
@@ -201,7 +201,7 @@ public class UserScreen{
 		String date = datebox.getSelectedItem()+"-"+(monthbox.getSelectedIndex()+1)+"-"+yearbox.getSelectedItem();
 		System.out.println(date+" "+src.getText()+" "+dest.getText());
 
-		results = AirlineSystem.searchFlightsStandard(src.getText(),dest.getText(),date,"price DESC");
+		results = AirlineSystem.searchFlightsStandard(src.getText(),dest.getText(),date,"price asc");
 
 
 	}
@@ -213,7 +213,7 @@ public class UserScreen{
 
 			while(bookings.next()){
 				String booking = "Ticket: " + bookings.getString("tno") 
-				+ ", Name: " + bookings.getString("name")
+				+ ", Name: " + bookings.getString("name").trim()
 				+ ", Departure Date: " + bookings.getDate("dep_date").toString()
 				+ ", Paid Price: " + bookings.getFloat("paid_price");
 				model.addElement(booking);

@@ -37,7 +37,7 @@ public class UserLoginScreen extends LoginScreen{
 		signup.addActionListener(new ActionListener(){
 			
 			 public void actionPerformed(ActionEvent e){
-				 
+				 Main.currentuser = new User(user.getText());
 				 try{
 					 if( Main.currentuser.isUser(user.getText()) && 
 						Main.currentuser.checkPassword( user.getText(),String.valueOf(pwrd.getPassword()))){
