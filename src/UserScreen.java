@@ -9,7 +9,9 @@ import java.sql.SQLException;
 
 public class UserScreen{
 	//The width of the application window
-	public static final int APPLICATION_WIDTH = 800;
+	public static final int PANEL_WIDTH = 300;
+	//The width of the application window
+	public static final int APPLICATION_WIDTH = PANEL_WIDTH*2+PANEL_WIDTH/2;
 	//The height of the application window 
 	public static final int APPLICATION_HEIGHT = 400;
 	//Number of characters for each of the text input fields
@@ -50,9 +52,12 @@ public class UserScreen{
 	private JLabel passengerlab;
 	private JLabel countrylab;
 	private JLabel returndate;
+	private JLabel bookingmessage;
 	private JCheckBox roundtrip;
 	private ResultSet results;
 	private boolean isroundtrip;
+	private JRadioButton sortbyprice;
+	private JRadioButton sortbyconn;
 
 	public UserScreen(){
 		src = new JTextField(TEXT_FIELD_SIZE);
@@ -60,8 +65,11 @@ public class UserScreen{
 		flightno = new JTextField(TEXT_FIELD_SIZE);
 		act_dep = new JTextField(TEXT_FIELD_SIZE);
 		act_arr = new JTextField(TEXT_FIELD_SIZE);
+		bookingmessage = new JLabel("");
+		sortbyprice = new JRadioButton("Price");
+		sortbyconn = new JRadioButton("Connections");
 		returndate = new JLabel("Return Date");
-		roundtrip = new JCheckBox();
+		roundtrip = new JCheckBox("Roundtrip");
 		model = new DefaultListModel<String>();
 		myList = new JList<String>(model);
 		scrollPane = new JScrollPane(myList);
@@ -93,30 +101,37 @@ public class UserScreen{
 		ryearbox = new JComboBox<Integer>(y);
 
 		agentp.setLayout(new GridLayout(10,1));
-		leftp.setLayout(new GridLayout(10,2));
+		leftp.setLayout(new GridLayout(10,3));
 		rightp.setLayout(new GridLayout(10,1));
 		centrep.setLayout(new GridLayout(1,1));
 
 	}
 
 	public void init(){
-		centrep.setPreferredSize(new Dimension(APPLICATION_WIDTH/2,APPLICATION_HEIGHT));
-		leftp.setPreferredSize(new Dimension(APPLICATION_WIDTH/4,APPLICATION_HEIGHT));
-		rightp.setPreferredSize(new Dimension(APPLICATION_WIDTH/4,APPLICATION_HEIGHT));
-		agentp.setPreferredSize(new Dimension(APPLICATION_WIDTH/4,APPLICATION_HEIGHT));
+		centrep.setPreferredSize(new Dimension(PANEL_WIDTH,APPLICATION_HEIGHT));
+		leftp.setPreferredSize(new Dimension(PANEL_WIDTH,APPLICATION_HEIGHT));
+		rightp.setPreferredSize(new Dimension(PANEL_WIDTH/2,APPLICATION_HEIGHT));
+		agentp.setPreferredSize(new Dimension(PANEL_WIDTH/2,APPLICATION_HEIGHT));
 		Main.mainpanel.setLayout(new FlowLayout());
 
 		leftp.add(new JLabel("Source"));
 		leftp.add(src);
+		leftp.add(new JLabel());
 		leftp.add(new JLabel("Destination"));
 		leftp.add(dest);
-		leftp.add(new JLabel("Departure Date"));
+		leftp.add(new JLabel());
+		leftp.add(new JLabel("Dep Date"));
+		leftp.add(new JLabel());
+		leftp.add(new JLabel());
 		leftp.add(monthbox);
 		leftp.add(datebox);
 		leftp.add(yearbox);
-		leftp.add(new JLabel("Roundtrip"));
 		leftp.add(roundtrip);
+		leftp.add(new JLabel());
+		leftp.add(new JLabel());
 		leftp.add(returndate);
+		leftp.add(new JLabel());
+		leftp.add(new JLabel());
 		leftp.add(rmonthbox);
 		leftp.add(rdatebox);
 		leftp.add(ryearbox);
@@ -125,7 +140,9 @@ public class UserScreen{
 		rdatebox.setVisible(false);
 		ryearbox.setVisible(false);
 		isroundtrip = false;
-
+		leftp.add(new JLabel("Sort By:"));
+		leftp.add(sortbyprice);
+		leftp.add(sortbyconn);
 		leftp.add(searchf);
 		leftp.add(logout);
 
@@ -161,7 +178,7 @@ public class UserScreen{
 		Main.mainpanel.add(centrep);
 		Main.mainpanel.add(rightp);
 		if(User.isAgent()){
-			Main.frame.setSize(APPLICATION_WIDTH+30+(APPLICATION_WIDTH/4), APPLICATION_HEIGHT+40);//I have to add to the dimensions here for some reason to get it to display properly.
+			Main.frame.setSize(APPLICATION_WIDTH+30+(PANEL_WIDTH/2), APPLICATION_HEIGHT+40);//I have to add to the dimensions here for some reason to get it to display properly.
 			Main.mainpanel.add(agentp);
 		} else{
 			Main.frame.setSize(APPLICATION_WIDTH+20, APPLICATION_HEIGHT+40);
@@ -255,6 +272,16 @@ public class UserScreen{
 				}
 			}
 		});
+		sortbyprice.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				sortbyconn.setSelected(false);
+			}
+		});
+		sortbyconn.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				sortbyprice.setSelected(false);
+			}
+		});
 		roundtrip.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				if(roundtrip.isSelected()){
@@ -275,24 +302,37 @@ public class UserScreen{
 	}
 
 	private void createBooking(){
+		String tno = "";
 		try{
 			getFlights();
 			results.absolute(myList.getSelectedIndex()+1);
 			int stops = results.getInt("stops");
 
 			for(int i = 0; i<=stops; i++){
-				AirlineSystem.makeBookings(passenger.getText(),Main.currentuser.getEmail(),
+				tno += AirlineSystem.makeBookings(passenger.getText(),Main.currentuser.getEmail(),
 						results.getString("flightno"+(i+1)).trim(),results.getFloat("price"+(i+1)),
-						results.getDate("dep_date").toString(),"",country.getText()); 
+						results.getDate("dep_date").toString(),"",country.getText()) + " "; 
 
 			}
+			
+			if(isroundtrip){
+				//book returntrip here.
+			}
+			bookingmessage.setText("Booking Confirmed-Ticket No(s): "+tno);
 
 		}catch(SQLException e){
 			System.out.println("createBooking: " + e.getMessage());
+			bookingmessage.setText("Could Not Confirm Booking");
 		}
 
 	}
 	private void getFlights(){
+		String sortby;
+		if(sortbyprice.isSelected()){
+			sortby = "price asc";
+		}else{
+			sortby = "stops asc";
+		}
 		String date = datebox.getSelectedItem()+"-"+(monthbox.getSelectedIndex()+1)+"-"+yearbox.getSelectedItem();
 		
 		//Added a cityQuery in AirlineSystem that takes in lowercase airport codes and partial city matches
@@ -300,9 +340,13 @@ public class UserScreen{
 		//TODO: give the user option to pick a matching city
 		System.out.println(date+" "+src.getText()+" "+dest.getText());
 		// pass the result (an airport code) into searchFlightsX
+<<<<<<< HEAD
 		results = AirlineSystem.searchFlightsModified(src.getText(),dest.getText(),date,"price asc");
 		//TODO: change "price asc" to something the user can select
 		//TODO: GUI Option to search for 3 flights;
+=======
+		results = AirlineSystem.searchFlightsStandard(src.getText(),dest.getText(),date,sortby);
+>>>>>>> 4cc601b819549b86c33ca37e32dfe1bebe7600f3
 
 	}
 
@@ -413,6 +457,5 @@ public class UserScreen{
 			model.addElement("No Available Flights");
 		}
 	}
-
 
 }
