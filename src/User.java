@@ -28,7 +28,7 @@ public class User{
 			String agentQ = "select * from airline_agents where email='"+Main.currentuser.getEmail()+"'";
 			ResultSet agent_rs = stmt.executeQuery(agentQ);
 			isAgent = agent_rs.next();
-			System.out.println(isAgent);
+			System.out.println("isAgent: "+isAgent);
 			return true;
 		} else {
 			return false;
