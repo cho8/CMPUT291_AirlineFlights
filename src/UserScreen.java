@@ -25,6 +25,7 @@ public class UserScreen{
 	private JPanel leftp = new JPanel();
 	private JPanel rightp = new JPanel();
 	private JPanel centrep = new JPanel();
+	private JPanel agentp = new JPanel();
 	private JList<String> myList;
 	private DefaultListModel<String> model;
 	private JScrollPane scrollPane;
@@ -32,6 +33,10 @@ public class UserScreen{
 	private JTextField dest;
 	private JTextField passenger;
 	private JTextField country;
+	private JTextField flightno;
+	private JTextField act_dep;
+	private JTextField act_arr;
+	private JButton updateflight;
 	private JButton searchf;
 	private JButton logout;
 	private JButton create;
@@ -45,6 +50,9 @@ public class UserScreen{
 	public UserScreen(){
 		src = new JTextField(TEXT_FIELD_SIZE);
 		dest = new JTextField(TEXT_FIELD_SIZE);
+		flightno = new JTextField(TEXT_FIELD_SIZE);
+		act_dep = new JTextField(TEXT_FIELD_SIZE);
+		act_arr = new JTextField(TEXT_FIELD_SIZE);
 		model = new DefaultListModel<String>();
 		myList = new JList<String>(model);
 		scrollPane = new JScrollPane(myList);
@@ -58,6 +66,7 @@ public class UserScreen{
 		passenger = new JTextField(TEXT_FIELD_SIZE);
 		country = new JTextField(TEXT_FIELD_SIZE);
 		deletebooking = new JButton("Cancel Booking");
+		updateflight = new JButton("Update Flight Times");
 		Integer[] s = new Integer[31];
 		for(int i = 0;i<31;i++){
 			s[i] = i+1;
@@ -70,6 +79,7 @@ public class UserScreen{
 		datebox = new JComboBox<Integer>(s);
 		yearbox = new JComboBox<Integer>(y);
 
+		agentp.setLayout(new GridLayout(10,1));
 		leftp.setLayout(new GridLayout(10,1));
 		rightp.setLayout(new GridLayout(10,1));
 		centrep.setLayout(new GridLayout(1,1));
@@ -77,10 +87,10 @@ public class UserScreen{
 	}
 
 	public void init(){
-		Main.frame.setSize(APPLICATION_WIDTH+20, APPLICATION_HEIGHT+40);//I have to add to the dimensions here for some reason to get it to display properly.
 		centrep.setPreferredSize(new Dimension(APPLICATION_WIDTH/2,APPLICATION_HEIGHT));
 		leftp.setPreferredSize(new Dimension(APPLICATION_WIDTH/4,APPLICATION_HEIGHT));
 		rightp.setPreferredSize(new Dimension(APPLICATION_WIDTH/4,APPLICATION_HEIGHT));
+		agentp.setPreferredSize(new Dimension(APPLICATION_WIDTH/4,APPLICATION_HEIGHT));
 		Main.mainpanel.setLayout(new FlowLayout());
 
 		leftp.add(new JLabel("Source"));
@@ -109,11 +119,26 @@ public class UserScreen{
 		rightp.add(deletebooking);
 		deletebooking.setVisible(false);
 		rightp.add(clear);
+		
+		agentp.add(new JLabel("Flight Number"));
+		agentp.add(flightno);
+		agentp.add(new JLabel("Actual Departure Time"));
+		agentp.add(act_dep);
+		agentp.add(new JLabel("Actual Arrival Time"));
+		agentp.add(act_arr);
+		agentp.add(updateflight);
+		
 
 		addListeners();
 		Main.mainpanel.add(leftp);
 		Main.mainpanel.add(centrep);
 		Main.mainpanel.add(rightp);
+		if(Main.currentuser.checkAgent()){
+			Main.frame.setSize(APPLICATION_WIDTH+20+(APPLICATION_WIDTH/4), APPLICATION_HEIGHT+40);//I have to add to the dimensions here for some reason to get it to display properly.
+			Main.mainpanel.add(agentp);
+		} else{
+			Main.frame.setSize(APPLICATION_WIDTH+20, APPLICATION_HEIGHT+40);
+		}
 		Main.frame.validate();
 		Main.frame.repaint();
 	}
@@ -183,6 +208,16 @@ public class UserScreen{
 		deletebooking.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				cancelBooking();
+			}
+		});
+		updateflight.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				try{
+				AirlineSystem.recordDepTime(flightno.getText(),act_dep.getText());
+				AirlineSystem.recordArrTime(flightno.getText(),act_arr.getText());
+				}catch(SQLException f){
+					System.out.println("update Flight: " + f.getMessage());
+				}
 			}
 		});
 	}
