@@ -9,7 +9,9 @@ import java.sql.SQLException;
 
 public class UserScreen{
 	//The width of the application window
-	public static final int APPLICATION_WIDTH = 800;
+	public static final int PANEL_WIDTH = 300;
+	//The width of the application window
+	public static final int APPLICATION_WIDTH = PANEL_WIDTH*2+PANEL_WIDTH/2;
 	//The height of the application window 
 	public static final int APPLICATION_HEIGHT = 400;
 	//Number of characters for each of the text input fields
@@ -67,7 +69,7 @@ public class UserScreen{
 		sortbyprice = new JRadioButton("Price");
 		sortbyconn = new JRadioButton("Connections");
 		returndate = new JLabel("Return Date");
-		roundtrip = new JCheckBox();
+		roundtrip = new JCheckBox("Roundtrip");
 		model = new DefaultListModel<String>();
 		myList = new JList<String>(model);
 		scrollPane = new JScrollPane(myList);
@@ -99,30 +101,37 @@ public class UserScreen{
 		ryearbox = new JComboBox<Integer>(y);
 
 		agentp.setLayout(new GridLayout(10,1));
-		leftp.setLayout(new GridLayout(10,2));
+		leftp.setLayout(new GridLayout(10,3));
 		rightp.setLayout(new GridLayout(10,1));
 		centrep.setLayout(new GridLayout(1,1));
 
 	}
 
 	public void init(){
-		centrep.setPreferredSize(new Dimension(APPLICATION_WIDTH/2,APPLICATION_HEIGHT));
-		leftp.setPreferredSize(new Dimension(APPLICATION_WIDTH/4,APPLICATION_HEIGHT));
-		rightp.setPreferredSize(new Dimension(APPLICATION_WIDTH/4,APPLICATION_HEIGHT));
-		agentp.setPreferredSize(new Dimension(APPLICATION_WIDTH/4,APPLICATION_HEIGHT));
+		centrep.setPreferredSize(new Dimension(PANEL_WIDTH,APPLICATION_HEIGHT));
+		leftp.setPreferredSize(new Dimension(PANEL_WIDTH,APPLICATION_HEIGHT));
+		rightp.setPreferredSize(new Dimension(PANEL_WIDTH/2,APPLICATION_HEIGHT));
+		agentp.setPreferredSize(new Dimension(PANEL_WIDTH/2,APPLICATION_HEIGHT));
 		Main.mainpanel.setLayout(new FlowLayout());
 
 		leftp.add(new JLabel("Source"));
 		leftp.add(src);
+		leftp.add(new JLabel());
 		leftp.add(new JLabel("Destination"));
 		leftp.add(dest);
-		leftp.add(new JLabel("Departure Date"));
+		leftp.add(new JLabel());
+		leftp.add(new JLabel("Dep Date"));
+		leftp.add(new JLabel());
+		leftp.add(new JLabel());
 		leftp.add(monthbox);
 		leftp.add(datebox);
 		leftp.add(yearbox);
-		leftp.add(new JLabel("Roundtrip"));
 		leftp.add(roundtrip);
+		leftp.add(new JLabel());
+		leftp.add(new JLabel());
 		leftp.add(returndate);
+		leftp.add(new JLabel());
+		leftp.add(new JLabel());
 		leftp.add(rmonthbox);
 		leftp.add(rdatebox);
 		leftp.add(ryearbox);
@@ -169,7 +178,7 @@ public class UserScreen{
 		Main.mainpanel.add(centrep);
 		Main.mainpanel.add(rightp);
 		if(User.isAgent()){
-			Main.frame.setSize(APPLICATION_WIDTH+30+(APPLICATION_WIDTH/4), APPLICATION_HEIGHT+40);//I have to add to the dimensions here for some reason to get it to display properly.
+			Main.frame.setSize(APPLICATION_WIDTH+30+(PANEL_WIDTH/2), APPLICATION_HEIGHT+40);//I have to add to the dimensions here for some reason to get it to display properly.
 			Main.mainpanel.add(agentp);
 		} else{
 			Main.frame.setSize(APPLICATION_WIDTH+20, APPLICATION_HEIGHT+40);
