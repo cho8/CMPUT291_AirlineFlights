@@ -4,7 +4,7 @@ public class User{
 	private static Statement stmt;
 
 	private String u_email; //TODO
-	private static boolean isAgent = false;
+	private static boolean isAgent;
 
 	public User(String email) {
 		this.stmt = AirlineSystem.stmt;
@@ -12,7 +12,7 @@ public class User{
 	}
 
 	public String getEmail() {
-		return u_email;
+		return u_email.trim();
 	}
 
 
@@ -23,19 +23,12 @@ public class User{
 						"where email='"+m_email+"'";
 		ResultSet rs = stmt.executeQuery(userQ);
 
-
-		if(rs.next()) {
-			isAgent = checkAgent();
-			return true;
-		} else {
-			return false;
-		}
-	}
-	
-	private static boolean checkAgent() throws SQLException {
-		String agentQ = "select * from airline_agents where email='"+Main.currentuser.getEmail()+"'";
-		ResultSet rs = stmt.executeQuery(agentQ);
-		if (rs.next()) {
+		if(rs.next()) { //check if user
+			// set agent
+			String agentQ = "select * from airline_agents where email='"+Main.currentuser.getEmail()+"'";
+			ResultSet agent_rs = stmt.executeQuery(agentQ);
+			isAgent = agent_rs.next();
+			System.out.println(isAgent);
 			return true;
 		} else {
 			return false;

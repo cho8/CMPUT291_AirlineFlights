@@ -270,15 +270,17 @@ public class AirlineSystem {
 
 	public static void recordDepTime(String flightno, String act_dep_time) throws SQLException {
 		if (act_dep_time.equals("")) return;
+		System.out.println(act_dep_time);
 		String depTimeQ = "UPDATE sch_flights "+
-				"SET act_dep_time=to_date('"+act_dep_time+"', 'hh24:mm') "+
+				"SET act_dep_time=to_date('"+act_dep_time+"', 'hh24:mi') "+
 				"WHERE flightno ='"+flightno+"'";
 		stmt.executeUpdate(depTimeQ);
 	}
 	public static void recordArrTime(String flightno, String act_arr_time) throws SQLException {
 		if (act_arr_time.equals("")) return;
+		System.out.println(act_arr_time);
 		String arrTimeQ = "UPDATE sch_flights "+
-				"SET act_dep_time=to_date('"+act_arr_time+"', 'hh24:mm') "+
+				"SET act_arr_time=to_date('"+act_arr_time+"', 'hh24:mi') "+
 				"WHERE flightno ='"+flightno+"'";
 		stmt.executeUpdate(arrTimeQ);
 	}

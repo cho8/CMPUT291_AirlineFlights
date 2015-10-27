@@ -133,8 +133,8 @@ public class UserScreen{
 		Main.mainpanel.add(leftp);
 		Main.mainpanel.add(centrep);
 		Main.mainpanel.add(rightp);
-		if(Main.currentuser.checkAgent()){
-			Main.frame.setSize(APPLICATION_WIDTH+20+(APPLICATION_WIDTH/4), APPLICATION_HEIGHT+40);//I have to add to the dimensions here for some reason to get it to display properly.
+		if(Main.currentuser.isAgent()){
+			Main.frame.setSize(APPLICATION_WIDTH+30+(APPLICATION_WIDTH/4), APPLICATION_HEIGHT+40);//I have to add to the dimensions here for some reason to get it to display properly.
 			Main.mainpanel.add(agentp);
 		} else{
 			Main.frame.setSize(APPLICATION_WIDTH+20, APPLICATION_HEIGHT+40);
@@ -215,6 +215,7 @@ public class UserScreen{
 				try{
 				AirlineSystem.recordDepTime(flightno.getText(),act_dep.getText());
 				AirlineSystem.recordArrTime(flightno.getText(),act_arr.getText());
+				
 				}catch(SQLException f){
 					System.out.println("update Flight: " + f.getMessage());
 				}

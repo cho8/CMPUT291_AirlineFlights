@@ -1,2 +1,2 @@
-update sch_flights set act_dep_time=to_date('22:10', 'hh24:mm')
+select to_char(act_dep_time, 'hh24:mi'), to_char(act_arr_time, 'hh24:mi') from sch_flights where flightno='AC014'
 /
