@@ -1,6 +1,5 @@
 import java.util.*;
 import java.sql.*;
-import java.sql.Date;
 
 public class AirlineSystem {
 	static Statement stmt;
@@ -37,13 +36,24 @@ public class AirlineSystem {
 		m_con.close();
 	}
 
-	private static void flightsQuery(String u_src, String u_dst, String u_depDate){
-
+	private static String citySearch(String city) throws SQLException{
+		//TODO: To be implemented in UserScreen
+		if (city.length() == 3) {
+			// airport code
+			return city.toUpperCase();
+		} else {
+			String airportsQ = "select distinct acode from airports where lower(city) ='%"+city+"%'";
+			ResultSet rs = stmt.executeQuery(airportsQ);
+			if (rs.next())
+				return rs.getString("acode").toUpperCase();
+			else
+				return null;
+		}
 	}
 
 
 	public static ResultSet searchFlightsStandard(String u_src, String u_dst, String u_depDate, String orderBy){
-
+		
 		//		flightsQuery(u_src, u_dst, u_depDate);
 		String searchAvailable = "create view available_flights(flightno,dep_date, src,dst,dep_time,arr_time,fare,seats, "+
 				"price) as "+
@@ -110,7 +120,29 @@ public class AirlineSystem {
 
 	public static ResultSet searchFlightsModified(String u_src, String u_dst, String u_depDate, String orderBy) throws SQLException{
 
-		flightsQuery(u_src, u_dst, u_depDate);
+		String searchAvailable = "create view available_flights(flightno,dep_date, src,dst,dep_time,arr_time,fare,seats, "+
+				"price) as "+
+				"select f.flightno, sf.dep_date, f.src, f.dst, f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time)), "+
+				"f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time))+(f.est_dur/60+a2.tzone-a1.tzone)/24, "+
+				"fa.fare, fa.limit-count(tno), fa.price "+
+				"from flights f, flight_fares fa, sch_flights sf, bookings b, airports a1, airports a2 "+
+				"where f.flightno=sf.flightno and f.flightno=fa.flightno and f.src=a1.acode and "+
+				"f.dst=a2.acode and fa.flightno=b.flightno(+) and fa.fare=b.fare(+) and "+
+				"sf.dep_date=b.dep_date(+) "+
+				"group by f.flightno, sf.dep_date, f.src, f.dst, f.dep_time, f.est_dur,a2.tzone, "+
+				"a1.tzone, fa.fare, fa.limit, fa.price "+
+				"having fa.limit-count(tno) > 0";
+		try{
+			stmt.executeUpdate("drop view available_flights");
+		}catch(SQLException e){
+			System.out.println("View doesn't exist");
+		}
+		try{
+			stmt.executeUpdate(searchAvailable);
+		}catch(SQLException h){
+			System.out.println("Cant update searchavailble");
+		}
+		
 		String goodConnect2 = "create view good_connections2 (src, dst, dep_date, flightno1, flightno2, flightno3, layover, layover2, price, seats, dep_time, arr_time, stops) as "+
 				"select a1.src, a3.dst, a1.dep_date, a1.flightno, a2.flightno, a3.flightno, a2.dep_time-a1.arr_time, a3.dep_time-a2.arr_time , "+
 				"a1.price+a2.price+a3.price, case when a1.seats <= a2.seats and a1.seats <= a3.seats then a1.seats when a2.seats <= a3.seats then a2.seats else a3.seats end, a1.dep_time, a3.arr_time, 2 stops "+
@@ -131,9 +163,25 @@ public class AirlineSystem {
 				"from good_connections2 "+
 				"where src='"+u_src+"' and dst='"+u_dst+"' and to_char(dep_date,'DD-MM-YYYY')='"+u_depDate+"') "+
 				"order by "+orderBy; //stops asc, price asc";
-		stmt.executeUpdate("drop view good_connections2");
-		stmt.executeUpdate(goodConnect2);
-		ResultSet rs = stmt.executeQuery(viewFlightsQ);
+		try{
+			stmt.executeUpdate("drop view good_connections2");
+		}catch(SQLException f){
+			System.out.println("can't drop good_connections2");
+		}
+		try{
+			stmt.executeUpdate(goodConnect2);
+
+		}catch(SQLException g){
+			System.out.println("Can't Update good_connections2");
+		}
+		ResultSet rs = null;
+		try{
+			rs = stmt.executeQuery(viewFlightsQ);
+
+		}catch(SQLException g){
+			System.out.println("Can't get Result Set");
+		}
+
 		//return resultset to display on gui
 		return rs;
 	}
@@ -171,16 +219,6 @@ public class AirlineSystem {
 		return n;
 	}
 
-	//	private static Boolean checkSeat(String flightno, String u_depDate) throws SQLException {
-	//		//check if seat not taken (i.e.
-	//		String seatsQ = "select * "+
-	//						"from bookings b"+
-	//						"where b.flightno='"+flightno+"' "+
-	//						"and to_char(b.dep_date, 'dd-mm-yyyy') ='"+u_depDate+"'";
-	//		ResultSet rs = stmt.executeQuery(seatsQ);
-	//		return rs.next();
-	//	}
-
 	private static Boolean checkBooking(String flightno, String u_depDate, String u_fare) throws SQLException {
 		// check if flight still available
 		String checkFlightQ = "select seats "+
@@ -192,7 +230,6 @@ public class AirlineSystem {
 		System.out.println(checkFlightQ);
 		ResultSet checkFlight = stmt.executeQuery(checkFlightQ);
 
-		//		return (checkFlight.next() && checkSeat(seat) && checkTicket(tno));
 		return true;//(checkFlight.next());
 	}
 
@@ -222,8 +259,6 @@ public class AirlineSystem {
 					+Main.currentuser.getEmail()+"',"+u_price+")";
 			String booking = "insert into bookings values("+tno+",'"+flightno+"','"+u_fare+"',"
 					+"to_date('"+ u_depDate +"', 'yyyy-mm-dd'),'"+u_seat+"')";
-			System.out.println(tickets);
-			System.out.println(booking);
 			stmt.executeUpdate(tickets);
 			stmt.executeUpdate(booking);
 			//TODO: confirmation message in the GUI
@@ -248,8 +283,11 @@ public class AirlineSystem {
 	}
 
 	public static ResultSet bookingDetail() throws SQLException {
-		String detailQ = "select "+
-				"from bookings b, tickets t, ";// TODO: display more information, design choice
+		String detailQ = "select b.tno, t.name, b.flightno, f.src, f.dst, b.fare, b.dep_date, b.seat, t.paid_price "+
+				"from bookings b, tickets t, flights f "+
+				"where b.tno=t.tno "+
+				"and f.flightno=b.flightno "+
+				"and t.email='"+Main.currentuser.getEmail()+"'";// TODO: display more information, design choice
 
 		ResultSet rs = stmt.executeQuery(detailQ);
 		// return resultset to display on gui

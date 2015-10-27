@@ -133,7 +133,7 @@ public class UserScreen{
 		Main.mainpanel.add(leftp);
 		Main.mainpanel.add(centrep);
 		Main.mainpanel.add(rightp);
-		if(Main.currentuser.isAgent()){
+		if(User.isAgent()){
 			Main.frame.setSize(APPLICATION_WIDTH+30+(APPLICATION_WIDTH/4), APPLICATION_HEIGHT+40);//I have to add to the dimensions here for some reason to get it to display properly.
 			Main.mainpanel.add(agentp);
 		} else{
@@ -241,11 +241,15 @@ public class UserScreen{
 	private void getFlights(){
 		String date = datebox.getSelectedItem()+"-"+(monthbox.getSelectedIndex()+1)+"-"+yearbox.getSelectedItem();
 		System.out.println(date+" "+src.getText()+" "+dest.getText());
-
+		//TODO: Added a cityQuery in AirlineSystem that takes in lowercase airport codes and partial city matches
+		// pass the result (an airport code) into searchFlightsX
 		results = AirlineSystem.searchFlightsStandard(src.getText(),dest.getText(),date,"price asc");
-
+		//TODO: change "price asc" to something the user can select
+		//TODO: GUI Option to search for 3 flights;
 
 	}
+	
+	//TODO: Round Trip
 
 	private void displayBookings(){
 		model.clear();
@@ -281,6 +285,26 @@ public class UserScreen{
 
 	private void displayDetailBooking(){
 		//More Details about booking.
+		//Added this, I included additional fields
+		//I'm thinking  for simplicity we just display everything-- Christina
+		model.clear();
+		try{
+			ResultSet bookings = AirlineSystem.listBookings();
+
+			while(bookings.next()){
+				String booking = "Ticket: " + bookings.getString("tno") 
+				+ ", Name: " + bookings.getString("name").trim()
+				+ ", Flight No.: " + bookings.getString("flightno")
+				+ ", Source : " + bookings.getString("src")
+				+ ", Destination : " + bookings.getString("dst")
+				+ ", Departure Date: " + bookings.getDate("dep_date").toString()
+				+ ", Seat: " + bookings.getString("seat").toString()
+				+ ", Paid Price: " + bookings.getFloat("paid_price");
+				model.addElement(booking);
+			}
+		}catch(SQLException e){
+			System.out.println("Can't Fetch Bookings " + e.getMessage());
+		}
 	}
 	private boolean multipleConnections(){
 		return false;
