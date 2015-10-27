@@ -33,6 +33,9 @@ public class Main{
 		frame.add(mainpanel);		
 		sqllogin = new SQLLoginScreen();
 		sqllogin.init();
+		
+//		UserScreen user = new UserScreen();
+//		user.init();
 	}
     
 

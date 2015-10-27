@@ -22,6 +22,9 @@ public class UserScreen{
 	private JComboBox<String> monthbox;
 	private JComboBox<Integer> datebox;
 	private JComboBox<Integer> yearbox;
+	private JComboBox<String> rmonthbox;
+	private JComboBox<Integer> rdatebox;
+	private JComboBox<Integer> ryearbox;
 	private JPanel leftp = new JPanel();
 	private JPanel rightp = new JPanel();
 	private JPanel centrep = new JPanel();
@@ -43,9 +46,13 @@ public class UserScreen{
 	private JButton existing;
 	private JButton clear;
 	private JButton deletebooking;
+	private JButton bookingdetail;
 	private JLabel passengerlab;
 	private JLabel countrylab;
+	private JLabel returndate;
+	private JCheckBox roundtrip;
 	private ResultSet results;
+	private boolean isroundtrip;
 
 	public UserScreen(){
 		src = new JTextField(TEXT_FIELD_SIZE);
@@ -53,6 +60,8 @@ public class UserScreen{
 		flightno = new JTextField(TEXT_FIELD_SIZE);
 		act_dep = new JTextField(TEXT_FIELD_SIZE);
 		act_arr = new JTextField(TEXT_FIELD_SIZE);
+		returndate = new JLabel("Return Date");
+		roundtrip = new JCheckBox();
 		model = new DefaultListModel<String>();
 		myList = new JList<String>(model);
 		scrollPane = new JScrollPane(myList);
@@ -61,6 +70,7 @@ public class UserScreen{
 		existing = new JButton("Existing Bookings");
 		logout = new JButton("Logout");
 		clear = new JButton("Clear Results");
+		bookingdetail = new JButton("Booking Details");
 		passengerlab = new JLabel("Passenger Name");
 		countrylab = new JLabel("Country");
 		passenger = new JTextField(TEXT_FIELD_SIZE);
@@ -78,9 +88,12 @@ public class UserScreen{
 		monthbox = new JComboBox<String>(months);
 		datebox = new JComboBox<Integer>(s);
 		yearbox = new JComboBox<Integer>(y);
+		rmonthbox = new JComboBox<String>(months);
+		rdatebox = new JComboBox<Integer>(s);
+		ryearbox = new JComboBox<Integer>(y);
 
 		agentp.setLayout(new GridLayout(10,1));
-		leftp.setLayout(new GridLayout(10,1));
+		leftp.setLayout(new GridLayout(10,2));
 		rightp.setLayout(new GridLayout(10,1));
 		centrep.setLayout(new GridLayout(1,1));
 
@@ -101,6 +114,18 @@ public class UserScreen{
 		leftp.add(monthbox);
 		leftp.add(datebox);
 		leftp.add(yearbox);
+		leftp.add(new JLabel("Roundtrip"));
+		leftp.add(roundtrip);
+		leftp.add(returndate);
+		leftp.add(rmonthbox);
+		leftp.add(rdatebox);
+		leftp.add(ryearbox);
+		returndate.setVisible(false);
+		rmonthbox.setVisible(false);
+		rdatebox.setVisible(false);
+		ryearbox.setVisible(false);
+		isroundtrip = false;
+
 		leftp.add(searchf);
 		leftp.add(logout);
 
@@ -111,15 +136,17 @@ public class UserScreen{
 		rightp.add(passenger);
 		rightp.add(countrylab);
 		rightp.add(country);
+		rightp.add(bookingdetail);
 		passengerlab.setVisible(false);
 		countrylab.setVisible(false);
 		passenger.setVisible(false);
 		country.setVisible(false);
+		bookingdetail.setVisible(false);
 		rightp.add(existing);
 		rightp.add(deletebooking);
 		deletebooking.setVisible(false);
 		rightp.add(clear);
-		
+
 		agentp.add(new JLabel("Flight Number"));
 		agentp.add(flightno);
 		agentp.add(new JLabel("Actual Departure Time"));
@@ -127,7 +154,7 @@ public class UserScreen{
 		agentp.add(new JLabel("Actual Arrival Time"));
 		agentp.add(act_arr);
 		agentp.add(updateflight);
-		
+
 
 		addListeners();
 		Main.mainpanel.add(leftp);
@@ -152,6 +179,7 @@ public class UserScreen{
 		searchf.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				deletebooking.setVisible(false);
+				bookingdetail.setVisible(false);
 				create.setVisible(true);
 				getFlights();
 				displayFlights();
@@ -184,7 +212,7 @@ public class UserScreen{
 					createBooking();
 				}
 
-//				System.out.println(myList.getSelectedValue());
+				//				System.out.println(myList.getSelectedValue());
 			}
 		});
 		existing.addActionListener(new ActionListener(){
@@ -196,6 +224,7 @@ public class UserScreen{
 				country.setVisible(false);
 				create.setVisible(false);
 				deletebooking.setVisible(true);
+				bookingdetail.setVisible(true);
 				displayBookings();
 				System.out.println("Existing");
 			}
@@ -210,14 +239,36 @@ public class UserScreen{
 				cancelBooking();
 			}
 		});
+		bookingdetail.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				displayDetailBooking();
+			}
+		});
 		updateflight.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				try{
-				AirlineSystem.recordDepTime(flightno.getText(),act_dep.getText());
-				AirlineSystem.recordArrTime(flightno.getText(),act_arr.getText());
-				
+					AirlineSystem.recordDepTime(flightno.getText(),act_dep.getText());
+					AirlineSystem.recordArrTime(flightno.getText(),act_arr.getText());
+
 				}catch(SQLException f){
 					System.out.println("update Flight: " + f.getMessage());
+				}
+			}
+		});
+		roundtrip.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				if(roundtrip.isSelected()){
+					returndate.setVisible(true);
+					rmonthbox.setVisible(true);
+					rdatebox.setVisible(true);
+					ryearbox.setVisible(true);
+					isroundtrip = true;
+				}else{
+					returndate.setVisible(false);
+					rmonthbox.setVisible(false);
+					rdatebox.setVisible(false);
+					ryearbox.setVisible(false);
+					isroundtrip = false;
 				}
 			}
 		});
@@ -225,14 +276,17 @@ public class UserScreen{
 
 	private void createBooking(){
 		try{
-		getFlights();
-		results.absolute(myList.getSelectedIndex()+1);
-		AirlineSystem.makeBookings(passenger.getText(),Main.currentuser.getEmail(),
-				results.getString("flightno1").trim(),results.getFloat("price"),
-				results.getDate("dep_date").toString(),"",country.getText()); 
-//		AirlineSystem.makeBookings(passenger.getText(),Main.currentuser.getEmail(),
-//				results.getString("flightno2").trim(),results.getFloat("price"),
-//				results.getDate("dep_date").toString(),"null");
+			getFlights();
+			results.absolute(myList.getSelectedIndex()+1);
+			int stops = results.getInt("stops");
+
+			for(int i = 0; i<=stops; i++){
+				AirlineSystem.makeBookings(passenger.getText(),Main.currentuser.getEmail(),
+						results.getString("flightno"+(i+1)).trim(),results.getFloat("price"+(i+1)),
+						results.getDate("dep_date").toString(),"",country.getText()); 
+
+			}
+
 		}catch(SQLException e){
 			System.out.println("createBooking: " + e.getMessage());
 		}
@@ -248,7 +302,7 @@ public class UserScreen{
 		//TODO: GUI Option to search for 3 flights;
 
 	}
-	
+
 	//TODO: Round Trip
 
 	private void displayBookings(){
@@ -268,7 +322,7 @@ public class UserScreen{
 		}
 
 	}
-	
+
 	private void cancelBooking(){
 		try{
 			ResultSet bookings = AirlineSystem.listBookings();
@@ -306,9 +360,7 @@ public class UserScreen{
 			System.out.println("Can't Fetch Bookings " + e.getMessage());
 		}
 	}
-	private boolean multipleConnections(){
-		return false;
-	}
+
 	private void displayFlights(){
 		model.clear();
 		boolean areflights = false;
@@ -316,22 +368,29 @@ public class UserScreen{
 		try{
 
 			while(results.next()){
-				String flight1 = "Flight 1: " + results.getString("flightno1")+", ";
-				String flight2 = "Flight 2: " + results.getString("flightno2") + ", ";
-				String flight3;
-				if(multipleConnections()){
-					flight3 = "Flight 3: " + results.getString("flightno3") + ", ";
-				}else{
-					flight3 = "";
-				}
 				areflights = true;
-				Integer stops = results.getInt("stops");
+				int stops = results.getInt("stops");
+				String flight1 = "";
+				String flight2 = "";
+				String flight3 = "";
 				String layover;
 				if(stops == 0){
 					layover = "";
 				}else{
 					layover = "Layover Time: "  
 							+ String.valueOf(results.getFloat("layover")) + ", ";
+				}
+
+				for(int i = 0; i<= stops; i++){
+					switch(i){
+						case 0: flight1 = "Flight 1: " + results.getString("flightno1") + ", ";
+								break;
+						case 1: flight1 = "Flight 2: " + results.getString("flightno2") + ", ";
+								break;
+						case 2: flight1 = "Flight 3: " + results.getString("flightno3") + ", ";
+								break;
+					}
+
 				}
 				String resultitem = "Source: " + results.getString("src")
 				+", Destination: "+ results.getString("dst") + ", "
