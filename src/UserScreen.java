@@ -50,9 +50,12 @@ public class UserScreen{
 	private JLabel passengerlab;
 	private JLabel countrylab;
 	private JLabel returndate;
+	private JLabel bookingmessage;
 	private JCheckBox roundtrip;
 	private ResultSet results;
 	private boolean isroundtrip;
+	private JRadioButton sortbyprice;
+	private JRadioButton sortbyconn;
 
 	public UserScreen(){
 		src = new JTextField(TEXT_FIELD_SIZE);
@@ -60,6 +63,9 @@ public class UserScreen{
 		flightno = new JTextField(TEXT_FIELD_SIZE);
 		act_dep = new JTextField(TEXT_FIELD_SIZE);
 		act_arr = new JTextField(TEXT_FIELD_SIZE);
+		bookingmessage = new JLabel("");
+		sortbyprice = new JRadioButton("Price");
+		sortbyconn = new JRadioButton("Connections");
 		returndate = new JLabel("Return Date");
 		roundtrip = new JCheckBox();
 		model = new DefaultListModel<String>();
@@ -125,7 +131,9 @@ public class UserScreen{
 		rdatebox.setVisible(false);
 		ryearbox.setVisible(false);
 		isroundtrip = false;
-
+		leftp.add(new JLabel("Sort By:"));
+		leftp.add(sortbyprice);
+		leftp.add(sortbyconn);
 		leftp.add(searchf);
 		leftp.add(logout);
 
@@ -255,6 +263,16 @@ public class UserScreen{
 				}
 			}
 		});
+		sortbyprice.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				sortbyconn.setSelected(false);
+			}
+		});
+		sortbyconn.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				sortbyprice.setSelected(false);
+			}
+		});
 		roundtrip.addActionListener(new ActionListener(){
 			public void actionPerformed(ActionEvent e){
 				if(roundtrip.isSelected()){
@@ -275,31 +293,42 @@ public class UserScreen{
 	}
 
 	private void createBooking(){
+		String tno = "";
 		try{
 			getFlights();
 			results.absolute(myList.getSelectedIndex()+1);
 			int stops = results.getInt("stops");
 
 			for(int i = 0; i<=stops; i++){
-				AirlineSystem.makeBookings(passenger.getText(),Main.currentuser.getEmail(),
+				tno += AirlineSystem.makeBookings(passenger.getText(),Main.currentuser.getEmail(),
 						results.getString("flightno"+(i+1)).trim(),results.getFloat("price"+(i+1)),
-						results.getDate("dep_date").toString(),"",country.getText()); 
+						results.getDate("dep_date").toString(),"",country.getText()) + " "; 
 
 			}
+			
+			if(isroundtrip){
+				//book returntrip here.
+			}
+			bookingmessage.setText("Booking Confirmed-Ticket No(s): "+tno);
 
 		}catch(SQLException e){
 			System.out.println("createBooking: " + e.getMessage());
+			bookingmessage.setText("Could Not Confirm Booking");
 		}
 
 	}
 	private void getFlights(){
+		String sortby;
+		if(sortbyprice.isSelected()){
+			sortby = "price asc";
+		}else{
+			sortby = "stops asc";
+		}
 		String date = datebox.getSelectedItem()+"-"+(monthbox.getSelectedIndex()+1)+"-"+yearbox.getSelectedItem();
 		System.out.println(date+" "+src.getText()+" "+dest.getText());
 		//TODO: Added a cityQuery in AirlineSystem that takes in lowercase airport codes and partial city matches
 		// pass the result (an airport code) into searchFlightsX
-		results = AirlineSystem.searchFlightsStandard(src.getText(),dest.getText(),date,"price asc");
-		//TODO: change "price asc" to something the user can select
-		//TODO: GUI Option to search for 3 flights;
+		results = AirlineSystem.searchFlightsStandard(src.getText(),dest.getText(),date,sortby);
 
 	}
 
@@ -410,6 +439,5 @@ public class UserScreen{
 			model.addElement("No Available Flights");
 		}
 	}
-
 
 }
